@@ -39,23 +39,10 @@
           <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Password</label>
           <input type="password" id="auth-password" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Login Role</label>
-          <select id="auth-role" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="owner">Owner / Clinic Manager (Full Financial Access)</option>
-            <option value="doctor">Doctor (Restricted to Assigned Patients)</option>
-          </select>
-        </div>
         <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
           Enter Clinical Portal
         </button>
       </form>
-
-      <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
-        <p class="font-bold text-slate-700">Quick Demo Logins:</p>
-        <p>• Owner: <span class="font-mono text-indigo-600">owner@auraclinic.com</span> | <span class="font-mono">admin123</span></p>
-        <p>• Doctor: <span class="font-mono text-indigo-600">dr.tarek@auraclinic.com</span> | <span class="font-mono">doc123</span></p>
-      </div>
     </div>
   </div>
 
@@ -562,33 +549,21 @@
 
     let appState = {
       doctors: [
-        { id: 'doc-1', name: 'Dr. Tarek Zaki (Plastic & Laser)', email: 'dr.tarek@auraclinic.com', baseSalary: 3000, pulseRate: 0.05, commissionRate: 0.15 },
-        { id: 'doc-2', name: 'Dr. Sarah Allam (Dentofacial Aesthetics)', email: 'dr.sarah@auraclinic.com', baseSalary: 2500, pulseRate: 0.00, commissionRate: 0.20 }
+        
       ],
       patients: [
-        { id: 'pat-1', name: 'Nouran Mostafa', phone: '201012345678', journeyStage: 'Laser/Surgical Treatment', medicalHistory: 'No drug allergies. Fitzpatrick Type II.', assignedDoctorId: 'doc-1' },
-        { id: 'pat-2', name: 'Karim Ezzat', phone: '201098765432', journeyStage: 'Consultation', medicalHistory: 'Hypertension controlled. Keloid tendency.', assignedDoctorId: 'doc-2' }
       ],
       services: [
-        { id: 'srv-1', name: 'Full Body Laser (Candela GentleLase)', cost: 35, price: 200, defaultPulses: 2800 },
-        { id: 'srv-2', name: 'Facial Hollywood Smile (16 Veneers)', cost: 400, price: 1800, defaultPulses: 0 }
       ],
       appointments: [
-        { id: 'apt-1', patientId: 'pat-1', doctorId: 'doc-1', sessionTime: '2026-11-05T14:30', serviceName: 'Full Body Laser (Candela GentleLase)', pulsesUsed: 2950, status: 'Confirmed' }
       ],
       invoices: [
-        { id: 'inv-1', patientId: 'pat-1', amount: 200, paymentMethod: 'Visa / MasterCard', invoiceDate: '2026-10-15', status: 'Paid' },
-        { id: 'inv-2', patientId: 'pat-1', amount: 200, paymentMethod: 'Cash', invoiceDate: '2026-11-02', status: 'Paid' }
       ],
       inventory: [
-        { id: 'item-1', itemName: 'Laser Cryogen Gas 1000g Canister', stockQty: 4, minAlertQty: 2, unitCost: 120 },
-        { id: 'item-2', itemName: 'Hyaluronic Acid 1ml Dermal Filler', stockQty: 15, minAlertQty: 5, unitCost: 80 }
       ],
       dentalRecords: {
-        'pat-2': { 18: { condition: 'decay', notes: 'Mesial pit decay' } }
       },
       logs: [
-        { id: 'log-1', action: 'System Initialization', performedBy: 'System', timestamp: new Date().toLocaleString(), details: 'Offline clinical storage initialized.' }
       ],
       supabaseConfig: {
         url: localStorage.getItem('aura_sb_url') || '',
