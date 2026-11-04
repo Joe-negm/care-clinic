@@ -645,39 +645,111 @@
     }
 
     /* AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC) */
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('auth-email').value.trim();
-      const role = document.getElementById('auth-role').value;
+ /* VERIFIED AUTHENTICATION & ROLE RETRIEVAL */
+async function handleLogin(e) {
+  e.preventDefault();
+  
+  const emailInput = document.getElementById('auth-email').value.trim();
+  const passwordInput = document.getElementById('auth-password').value;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
-      if (role === 'doctor') {
-        const doc = appState.doctors.find(d => d.email.toLowerCase() === email.toLowerCase());
-        currentUser = {
-          role: 'doctor',
-          email,
-          doctorId: doc ? doc.id : 'doc-1',
-          name: doc ? doc.name : 'Dr. Practitioner'
-        };
-      } else {
-        currentUser = {
-          role: 'owner',
-          email,
-          doctorId: null,
-          name: 'Clinic Owner / Manager'
-        };
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Verifying credentials...';
+
+  // 1. ONLINE VERIFICATION (Via Supabase Auth)
+  if (supabaseClient && navigator.onLine) {
+    try {
+      // Step A: Check Email & Password against Supabase Auth
+      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+        email: emailInput,
+        password: passwordInput
+      });
+
+      if (authError) throw authError;
+
+      // Step B: Query the user's verified role from the staff_profiles table
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('staff_profiles')
+        .select('role, full_name, doctor_id')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('Authenticated, but no clinical staff profile was found for this user.');
       }
 
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('main-app').classList.remove('hidden');
+      // Step C: Set Verified Session State
+      currentUser = {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: profile.full_name,
+        role: profile.role, // 'owner' or 'doctor'
+        doctorId: profile.doctor_id || null
+      };
 
-      document.getElementById('user-display-name').textContent = currentUser.name;
-      document.getElementById('user-display-role').textContent = currentUser.role === 'owner' ? 'Owner (Full Access)' : 'Doctor (Restricted Access)';
+      // Cache verified session locally for offline emergency access
+      localStorage.setItem('aura_active_session', JSON.stringify({
+        user: currentUser,
+        timestamp: Date.now()
+      }));
 
-      applyRBAC();
-      renderAll();
-      logAction('LOGIN', `User ${currentUser.email} logged in under role: ${currentUser.role}`);
+      completeLoginUI();
+      logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
+      return;
+
+    } catch (err) {
+      alert('Authentication Failed: ' + err.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enter Clinical Portal';
+      return;
     }
+  }
 
+  // 2. OFFLINE EMERGENCY LOGIN FALLBACK
+  // If the clinic loses internet, verify against the cached session created during the last online login
+  const cachedSession = localStorage.getItem('aura_active_session');
+  if (cachedSession) {
+    try {
+      const session = JSON.parse(cachedSession);
+      if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
+        currentUser = session.user;
+        completeLoginUI();
+        logAction('OFFLINE_LOGIN', `Offline emergency login for ${currentUser.email}`);
+        return;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  alert('Authentication Error: Cannot verify credentials while offline without a prior active session.');
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Enter Clinical Portal';
+}
+
+function completeLoginUI() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+
+  document.getElementById('user-display-name').textContent = currentUser.name;
+  document.getElementById('user-display-role').textContent = 
+    currentUser.role === 'owner' ? 'Owner / Manager (Full Access)' : 'Doctor (Restricted)';
+
+  applyRBAC();
+  renderAll();
+}
+
+function logout() {
+  if (supabaseClient) {
+    supabaseClient.auth.signOut();
+  }
+  localStorage.removeItem('aura_active_session');
+  currentUser = null;
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+}
     function logout() {
       logAction('LOGOUT', `User ${currentUser.email} logged out`);
       currentUser = null;
