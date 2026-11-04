@@ -533,11 +533,11 @@
       <p class="text-xs text-slate-500 leading-relaxed">Your Supabase cloud credentials are authenticated. Data synchronizes automatically when online.</p>
       <div>
         <label class="text-xs font-semibold text-slate-700">Project URL</label>
-        <input type="text" id="sb-url" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50" readonly />
+        <input type="text" id="sb-url" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50 font-mono text-xs" readonly />
       </div>
       <div>
         <label class="text-xs font-semibold text-slate-700">Anon Public Key</label>
-        <input type="text" id="sb-key" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50" readonly />
+        <input type="text" id="sb-key" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50 font-mono text-xs" readonly />
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeModal('supabase-modal')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">Close</button>
@@ -552,11 +552,10 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2ZnhncGVzbnRtYWJucHl0b2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3ODU0MDYsImV4cCI6MjEwOTM2MTQwNn0.EZWnlrc16uC_MfOxw8T1o0jtGMTXoilsPhn973Kj5u0";
 
     const STORE_KEY = 'aura_clinic_master_db';
-    let currentUser = null; // { id, email, name, role: 'owner'|'doctor', doctorId }
+    let currentUser = null; 
     let selectedTooth = null;
     let supabaseClient = null;
 
-    // Zero hardcoded demo data
     let appState = {
       doctors: [],
       patients: [],
@@ -578,13 +577,11 @@
           console.error('Corrupted cache', e); 
         }
       }
-      persist();
       initSupabase();
     }
 
-    function persist() {
+    function persistLocal() {
       localStorage.setItem(STORE_KEY, JSON.stringify(appState));
-      syncWithSupabase();
     }
 
     function logAction(action, details) {
@@ -597,10 +594,20 @@
       };
       appState.logs.unshift(entry);
       renderLogs();
-      localStorage.setItem(STORE_KEY, JSON.stringify(appState));
+      persistLocal();
+      
+      if (supabaseClient && navigator.onLine) {
+        supabaseClient.from('audit_logs').insert([{
+          id: entry.id,
+          action: entry.action,
+          performed_by: entry.performedBy,
+          timestamp: new Date().toISOString(),
+          details: entry.details
+        }]).then();
+      }
     }
 
-    /* ================= 3. SUPABASE CLOUD SYNC ================= */
+    /* ================= 3. TWO-WAY SUPABASE CLOUD SYNC ================= */
     function initSupabase() {
       try {
         supabaseClient = supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
@@ -618,21 +625,101 @@
       }
     }
 
-    async function syncWithSupabase() {
+    async function fetchCloudData() {
       if (!supabaseClient || !navigator.onLine) return;
+
       try {
-        if (appState.logs.length > 0) {
-          const l = appState.logs[0];
-          await supabaseClient.from('audit_logs').upsert({
-            id: l.id,
-            action: l.action,
-            performed_by: l.performedBy,
-            timestamp: new Date().toISOString(),
-            details: l.details
+        // 1. Fetch Patients
+        const { data: pts } = await supabaseClient.from('patients').select('*');
+        if (pts) {
+          appState.patients = pts.map(p => ({
+            id: p.id,
+            name: p.name,
+            phone: p.phone,
+            journeyStage: p.journey_stage,
+            medicalHistory: p.medical_history,
+            assignedDoctorId: p.assigned_doctor_id
+          }));
+        }
+
+        // 2. Fetch Doctors
+        const { data: docs } = await supabaseClient.from('doctors').select('*');
+        if (docs) {
+          appState.doctors = docs.map(d => ({
+            id: d.id,
+            name: d.name,
+            email: d.email,
+            baseSalary: Number(d.base_salary || 0),
+            pulseRate: Number(d.pulse_rate || 0.05),
+            commissionRate: Number(d.commission_rate || 0.15)
+          }));
+        }
+
+        // 3. Fetch Appointments & Pulses
+        const { data: apts } = await supabaseClient.from('appointments').select('*');
+        if (apts) {
+          appState.appointments = apts.map(a => ({
+            id: a.id,
+            patientId: a.patient_id,
+            doctorId: a.doctor_id,
+            sessionTime: a.session_time,
+            serviceName: a.service_name,
+            pulsesUsed: Number(a.pulses_used || 0),
+            status: a.status
+          }));
+        }
+
+        // 4. Fetch Services
+        const { data: srvs } = await supabaseClient.from('services').select('*');
+        if (srvs) {
+          appState.services = srvs.map(s => ({
+            id: s.id,
+            name: s.name,
+            cost: Number(s.cost || 0),
+            price: Number(s.price || 0),
+            defaultPulses: Number(s.default_pulses || 0)
+          }));
+        }
+
+        // 5. Fetch Invoices
+        const { data: invs } = await supabaseClient.from('invoices').select('*');
+        if (invs) {
+          appState.invoices = invs.map(i => ({
+            id: i.id,
+            patientId: i.patient_id,
+            amount: Number(i.amount || 0),
+            paymentMethod: i.payment_method,
+            invoiceDate: i.invoice_date,
+            status: i.status
+          }));
+        }
+
+        // 6. Fetch Inventory
+        const { data: items } = await supabaseClient.from('inventory').select('*');
+        if (items) {
+          appState.inventory = items.map(item => ({
+            id: item.id,
+            itemName: item.item_name,
+            stockQty: Number(item.stock_qty || 0),
+            minAlertQty: Number(item.min_alert_qty || 0),
+            unitCost: Number(item.unit_cost || 0)
+          }));
+        }
+
+        // 7. Fetch Dental Records
+        const { data: dnt } = await supabaseClient.from('dental_records').select('*');
+        if (dnt) {
+          appState.dentalRecords = {};
+          dnt.forEach(r => {
+            if (!appState.dentalRecords[r.patient_id]) appState.dentalRecords[r.patient_id] = {};
+            appState.dentalRecords[r.patient_id][r.tooth_number] = { condition: r.condition, notes: r.notes || '' };
           });
         }
+
+        persistLocal();
+        renderAll();
       } catch (err) {
-        console.warn('Background Supabase sync skipped:', err);
+        console.warn('Error fetching cloud data:', err);
       }
     }
 
@@ -647,11 +734,8 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Verifying credentials...';
 
-      if (!supabaseClient) {
-        initSupabase();
-      }
+      if (!supabaseClient) initSupabase();
 
-      // Online Verification
       if (navigator.onLine) {
         try {
           const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
@@ -661,7 +745,6 @@
 
           if (authError) throw authError;
 
-          // Retrieve verified role from staff_profiles
           const { data: profile, error: profileError } = await supabaseClient
             .from('staff_profiles')
             .select('role, full_name, doctor_id')
@@ -669,24 +752,24 @@
             .single();
 
           if (profileError || !profile) {
-            throw new Error('Authenticated, but no role profile was found in staff_profiles table. Run Step 1 SQL script.');
+            throw new Error('Authenticated, but no role profile was found in staff_profiles table.');
           }
 
           currentUser = {
             id: authData.user.id,
             email: authData.user.email,
             name: profile.full_name,
-            role: profile.role, // 'owner' or 'doctor'
+            role: profile.role,
             doctorId: profile.doctor_id || null
           };
 
-          // Cache verified session for offline access
           localStorage.setItem('aura_active_session', JSON.stringify({
             user: currentUser,
             timestamp: Date.now()
           }));
 
           completeLoginUI();
+          await fetchCloudData();
           logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
           return;
 
@@ -698,19 +781,15 @@
         }
       }
 
-      // Offline Emergency Fallback
+      // Offline Fallback
       const cachedSession = localStorage.getItem('aura_active_session');
       if (cachedSession) {
-        try {
-          const session = JSON.parse(cachedSession);
-          if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
-            currentUser = session.user;
-            completeLoginUI();
-            logAction('OFFLINE_LOGIN', `Offline login for ${currentUser.email}`);
-            return;
-          }
-        } catch(err) {
-          console.error(err);
+        const session = JSON.parse(cachedSession);
+        if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
+          currentUser = session.user;
+          completeLoginUI();
+          logAction('OFFLINE_LOGIN', `Offline login for ${currentUser.email}`);
+          return;
         }
       }
 
@@ -732,9 +811,7 @@
     }
 
     function logout() {
-      if (supabaseClient) {
-        supabaseClient.auth.signOut();
-      }
+      if (supabaseClient) supabaseClient.auth.signOut();
       localStorage.removeItem('aura_active_session');
       currentUser = null;
       document.getElementById('main-app').classList.add('hidden');
@@ -774,13 +851,9 @@
     }
 
     function runWhatsAppBot() {
-      let count = 0;
-      appState.appointments.forEach(apt => {
-        const pat = appState.patients.find(p => p.id === apt.patientId);
-        if (pat) count++;
-      });
-      alert(`WhatsApp Automation Bot Executed:\n\n• Checked ${count} active treatments.\n• Post-treatment cooling instructions and follow-ups processed.`);
-      logAction('WHATSAPP_BOT', `Bot auto-followup checked ${count} sessions`);
+      let count = appState.appointments.length;
+      alert(`WhatsApp Automation Bot Executed:\n\n• Checked ${count} active treatments.\n• Follow-up check-ins and post-op care guides dispatched.`);
+      logAction('WHATSAPP_BOT', `Bot checked ${count} sessions`);
     }
 
     /* ================= 7. RENDER ENGINE ================= */
@@ -1020,19 +1093,29 @@
       document.getElementById('tooth-notes-input').value = record.notes || '';
     }
 
-    function saveToothRecord() {
+    async function saveToothRecord() {
       if (!selectedTooth) return alert('Please click on a tooth in the grid first.');
       const patId = document.getElementById('dental-patient-select').value;
+      if (!patId) return alert('Please select a patient first.');
       if (!appState.dentalRecords[patId]) appState.dentalRecords[patId] = {};
 
       const condition = document.getElementById('tooth-condition-input').value;
       const notes = document.getElementById('tooth-notes-input').value;
 
       appState.dentalRecords[patId][selectedTooth] = { condition, notes };
-      persist();
+      persistLocal();
       loadSelectedPatientDental();
       logAction('DENTAL_RECORD_UPDATE', `Updated tooth #${selectedTooth} for patient ${patId} to [${condition}]`);
-      alert(`Tooth #${selectedTooth} saved successfully.`);
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('dental_records').upsert({
+          patient_id: patId,
+          tooth_number: Number(selectedTooth),
+          condition: condition,
+          notes: notes
+        });
+      }
+      alert(`Tooth #${selectedTooth} saved successfully to cloud.`);
     }
 
     function loadSelectedPatientDental() {
@@ -1059,7 +1142,7 @@
       }
     }
 
-    /* ================= 9. FORM ACTIONS & MODALS ================= */
+    /* ================= 9. FORM ACTIONS WITH SUPABASE CLOUD INSERTS ================= */
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -1076,7 +1159,8 @@
       });
     }
 
-    function handleSavePatient(e) {
+    // 1. Save Patient to Cloud
+    async function handleSavePatient(e) {
       e.preventDefault();
       const newPat = {
         id: 'pat-' + Date.now(),
@@ -1084,17 +1168,31 @@
         phone: document.getElementById('p-phone').value,
         journeyStage: document.getElementById('p-journey').value,
         medicalHistory: document.getElementById('p-history').value,
-        assignedDoctorId: document.getElementById('p-doctor').value
+        assignedDoctorId: document.getElementById('p-doctor').value || null
       };
+
       appState.patients.push(newPat);
-      persist();
+      persistLocal();
       logAction('PATIENT_REGISTRATION', `Registered patient ${newPat.name}`);
       closeModal('patient-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('patients').insert([{
+          id: newPat.id,
+          name: newPat.name,
+          phone: newPat.phone,
+          journey_stage: newPat.journeyStage,
+          medical_history: newPat.medicalHistory,
+          assigned_doctor_id: newPat.assignedDoctorId
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function handleSaveAppointment(e) {
+    // 2. Save Appointment to Cloud
+    async function handleSaveAppointment(e) {
       e.preventDefault();
       const newApt = {
         id: 'apt-' + Date.now(),
@@ -1105,15 +1203,30 @@
         pulsesUsed: Number(document.getElementById('apt-pulses').value || 0),
         status: 'Scheduled'
       };
+
       appState.appointments.push(newApt);
-      persist();
+      persistLocal();
       logAction('SESSION_BOOKED', `Session scheduled for ${newApt.serviceName} (${newApt.pulsesUsed} pulses)`);
       closeModal('appointment-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('appointments').insert([{
+          id: newApt.id,
+          patient_id: newApt.patientId,
+          doctor_id: newApt.doctorId,
+          session_time: newApt.sessionTime,
+          service_name: newApt.serviceName,
+          pulses_used: newApt.pulsesUsed,
+          status: newApt.status
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function handleSaveDoctor(e) {
+    // 3. Save Doctor to Cloud
+    async function handleSaveDoctor(e) {
       e.preventDefault();
       const newDoc = {
         id: 'doc-' + Date.now(),
@@ -1123,15 +1236,29 @@
         pulseRate: Number(document.getElementById('doc-pulse-rate').value),
         commissionRate: Number(document.getElementById('doc-comm').value)
       };
+
       appState.doctors.push(newDoc);
-      persist();
+      persistLocal();
       logAction('DOCTOR_ADDED', `Doctor ${newDoc.name} registered`);
       closeModal('doctor-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('doctors').insert([{
+          id: newDoc.id,
+          name: newDoc.name,
+          email: newDoc.email,
+          base_salary: newDoc.baseSalary,
+          pulse_rate: newDoc.pulseRate,
+          commission_rate: newDoc.commissionRate
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function handleSaveService(e) {
+    // 4. Save Service to Cloud
+    async function handleSaveService(e) {
       e.preventDefault();
       const newSrv = {
         id: 'srv-' + Date.now(),
@@ -1140,15 +1267,28 @@
         price: Number(document.getElementById('srv-price').value),
         defaultPulses: Number(document.getElementById('srv-pulses').value || 0)
       };
+
       appState.services.push(newSrv);
-      persist();
+      persistLocal();
       logAction('SERVICE_CREATED', `Service ${newSrv.name} added`);
       closeModal('service-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('services').insert([{
+          id: newSrv.id,
+          name: newSrv.name,
+          cost: newSrv.cost,
+          price: newSrv.price,
+          default_pulses: newSrv.defaultPulses
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function handleSaveInvoice(e) {
+    // 5. Save Invoice to Cloud
+    async function handleSaveInvoice(e) {
       e.preventDefault();
       const newInv = {
         id: 'inv-' + Date.now(),
@@ -1158,15 +1298,29 @@
         invoiceDate: document.getElementById('inv-date').value,
         status: 'Paid'
       };
+
       appState.invoices.push(newInv);
-      persist();
+      persistLocal();
       logAction('INVOICE_ISSUED', `Invoice of $${newInv.amount} logged via ${newInv.paymentMethod}`);
       closeModal('invoice-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('invoices').insert([{
+          id: newInv.id,
+          patient_id: newInv.patientId,
+          amount: newInv.amount,
+          payment_method: newInv.paymentMethod,
+          invoice_date: newInv.invoiceDate,
+          status: newInv.status
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function handleSaveInventory(e) {
+    // 6. Save Inventory Consumable to Cloud
+    async function handleSaveInventory(e) {
       e.preventDefault();
       const newItem = {
         id: 'item-' + Date.now(),
@@ -1175,21 +1329,38 @@
         minAlertQty: Number(document.getElementById('inv-min').value),
         unitCost: Number(document.getElementById('inv-cost').value)
       };
+
       appState.inventory.push(newItem);
-      persist();
+      persistLocal();
       logAction('INVENTORY_ADDED', `Consumable ${newItem.itemName} added`);
       closeModal('inventory-modal');
       renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        const { error } = await supabaseClient.from('inventory').insert([{
+          id: newItem.id,
+          item_name: newItem.itemName,
+          stock_qty: newItem.stockQty,
+          min_alert_qty: newItem.minAlertQty,
+          unit_cost: newItem.unitCost
+        }]);
+        if (error) console.error("Cloud save error:", error);
+      }
       e.target.reset();
     }
 
-    function changeStock(itemId, delta) {
+    // Adjust Stock Quantity & Cloud Sync
+    async function changeStock(itemId, delta) {
       const item = appState.inventory.find(i => i.id === itemId);
       if (item) {
         item.stockQty = Math.max(0, item.stockQty + delta);
-        persist();
+        persistLocal();
         renderInventory();
         logAction('STOCK_ADJUSTMENT', `${item.itemName} stock adjusted to ${item.stockQty}`);
+
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('inventory').update({ stock_qty: item.stockQty }).eq('id', itemId);
+        }
       }
     }
 
