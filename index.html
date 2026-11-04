@@ -546,6 +546,26 @@
     let currentUser = null; // { role: 'owner'|'doctor', email: '', doctorId: '' }
     let selectedTooth = null;
     let supabaseClient = null;
+    /* ================= CONFIGURATION ================= */
+// Paste your actual Supabase credentials here:
+const SUPABASE_PROJECT_URL = "https://xyzcompany.supabase.co"; // Replace with your Project URL
+const SUPABASE_ANON_KEY = "eyJhbGciOi...";                    // Replace with your Anon Key
+
+const STORE_KEY = 'aura_clinic_master_db';
+let currentUser = null;
+let selectedTooth = null;
+let supabaseClient = null;
+
+let appState = {
+  doctors: [],
+  patients: [],
+  services: [],
+  appointments: [],
+  invoices: [],
+  inventory: [],
+  dentalRecords: {},
+  logs: []
+};
 
     let appState = {
       doctors: [
@@ -600,14 +620,121 @@
     }
 
     /* SUPABASE CLOUD CONNECTION */
-    function initSupabase() {
-      if (appState.supabaseConfig.url && appState.supabaseConfig.key) {
-        try {
-          supabaseClient = supabase.createClient(appState.supabaseConfig.url, appState.supabaseConfig.key);
-          const badge = document.getElementById('sync-status-badge');
-          badge.textContent = 'Supabase Cloud';
-          badge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase';
-        } catch (e) {
+    /* SUPABASE CLIENT INITIALIZATION */
+function initSupabase() {
+  const url = SUPABASE_PROJECT_URL || localStorage.getItem('aura_sb_url');
+  const key = SUPABASE_ANON_KEY || localStorage.getItem('aura_sb_key');
+
+  if (url && key && url !== "https://xyzcompany.supabase.co") {
+    try {
+      supabaseClient = supabase.createClient(url, key);
+      const badge = document.getElementById('sync-status-badge');
+      if (badge) {
+        badge.textContent = 'Supabase Cloud';
+        badge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase';
+      }
+      return true;
+    } catch (e) {
+      console.warn('Supabase initialization failed:', e);
+      return false;
+    }
+  }
+  return false;
+}
+
+/* VERIFIED AUTHENTICATION */
+async function handleLogin(e) {
+  e.preventDefault();
+  
+  const emailInput = document.getElementById('auth-email').value.trim();
+  const passwordInput = document.getElementById('auth-password').value;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Verifying credentials...';
+
+  // Make sure Supabase is initialized
+  if (!supabaseClient) {
+    initSupabase();
+  }
+
+  // 1. If Supabase is still not configured, inform the user clearly
+  if (!supabaseClient) {
+    alert("Configuration Error:\nSupabase Project URL and Anon Key are missing. Please add them at the top of the <script> tag in index.html.");
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Enter Clinical Portal';
+    return;
+  }
+
+  // 2. ONLINE VERIFICATION
+  if (navigator.onLine) {
+    try {
+      // Step A: Check email & password with Supabase Auth
+      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+        email: emailInput,
+        password: passwordInput
+      });
+
+      if (authError) throw authError;
+
+      // Step B: Query staff_profiles table for verified role
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('staff_profiles')
+        .select('role, full_name, doctor_id')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('Authenticated, but no role profile was found in staff_profiles table.');
+      }
+
+      // Step C: Set the verified user session
+      currentUser = {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: profile.full_name,
+        role: profile.role, // 'owner' or 'doctor'
+        doctorId: profile.doctor_id || null
+      };
+
+      // Save session locally so OFFLINE logins work in the future
+      localStorage.setItem('aura_active_session', JSON.stringify({
+        user: currentUser,
+        timestamp: Date.now()
+      }));
+
+      completeLoginUI();
+      logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
+      return;
+
+    } catch (err) {
+      alert('Authentication Failed: ' + err.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enter Clinical Portal';
+      return;
+    }
+  }
+
+  // 3. OFFLINE EMERGENCY LOGIN FALLBACK
+  const cachedSession = localStorage.getItem('aura_active_session');
+  if (cachedSession) {
+    try {
+      const session = JSON.parse(cachedSession);
+      if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
+        currentUser = session.user;
+        completeLoginUI();
+        logAction('OFFLINE_LOGIN', `Offline emergency login for ${currentUser.email}`);
+        return;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  alert('Offline Error: You must log in online at least once on this device before offline mode can be used.');
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Enter Clinical Portal';
+}catch (e) {
           console.warn('Supabase initialization failed:', e);
         }
       }
