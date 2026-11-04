@@ -55,7 +55,7 @@
   <!-- ================= APP WORKSPACE ================= -->
   <div id="main-app" class="flex-1 flex flex-col lg:flex-row overflow-hidden hidden w-full h-full">
 
-    <!-- MOBILE TOP BAR (Visible only on < lg screens) -->
+    <!-- MOBILE TOP BAR -->
     <header class="lg:hidden bg-slate-900 text-slate-100 flex items-center justify-between px-4 py-3 border-b border-slate-800 flex-shrink-0 z-30">
       <div class="flex items-center gap-2">
         <button onclick="toggleSidebar()" class="p-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white focus:outline-none" aria-label="Toggle navigation">
@@ -77,10 +77,10 @@
     <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
     <div id="sidebar-overlay" onclick="closeSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <!-- RESPONSIVE SIDEBAR (Slide-out drawer on mobile, static on desktop) -->
+    <!-- RESPONSIVE SIDEBAR -->
     <aside id="app-sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-64 bg-slate-900 text-slate-100 flex flex-col justify-between shadow-2xl flex-shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
       <div>
-        <!-- Desktop Sidebar Header -->
+        <!-- Desktop Header -->
         <div class="p-5 border-b border-slate-800 hidden lg:flex items-center justify-between">
           <div class="flex items-center gap-2">
             <i data-lucide="sparkles" class="text-rose-400"></i>
@@ -142,7 +142,6 @@
         </nav>
       </div>
 
-      <!-- Footer cloud setup button -->
       <div class="p-3 border-t border-slate-800">
         <button onclick="openModal('supabase-modal')" class="w-full flex items-center justify-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 py-2.5 rounded-lg text-emerald-400 font-medium transition">
           <i data-lucide="database" class="w-3.5 h-3.5"></i> Supabase Setup
@@ -211,14 +210,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Session Scheduling</h1>
             <p class="text-xs text-slate-500">Book treatments, assign doctors, and log laser pulses</p>
           </div>
-          <button onclick="openModal('appointment-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+          <button onclick="openAppointmentModalForAdd()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
             <i data-lucide="plus" class="w-4 h-4"></i> Book Session
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[750px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Date & Time</th>
@@ -227,7 +226,7 @@
                   <th class="p-3">Procedure</th>
                   <th class="p-3">Pulses Fired</th>
                   <th class="p-3">Status</th>
-                  <th class="p-3">WhatsApp</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="calendar-table-body" class="divide-y divide-slate-100"></tbody>
@@ -243,14 +242,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Patient Profiles & Journey</h1>
             <p class="text-xs text-slate-500">Inquiry $\rightarrow$ Consultation $\rightarrow$ Treatment $\rightarrow$ Post-Op Recovery $\rightarrow$ Completed</p>
           </div>
-          <button onclick="openModal('patient-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+          <button onclick="openPatientModalForAdd()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
             <i data-lucide="user-plus" class="w-4 h-4"></i> New Patient
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[750px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Patient</th>
@@ -258,7 +257,7 @@
                   <th class="p-3">Journey Stage</th>
                   <th class="p-3">Medical History</th>
                   <th class="p-3">Assigned Doctor</th>
-                  <th class="p-3">Statements</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="patient-table-body" class="divide-y divide-slate-100"></tbody>
@@ -280,7 +279,6 @@
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
-          <!-- Dental Arches wrapper with horizontal scroll protection -->
           <div class="overflow-x-auto pb-3">
             <div class="min-w-[620px] max-w-4xl mx-auto space-y-3">
               <div class="text-center font-bold text-[10px] sm:text-xs uppercase tracking-wider text-slate-500">Maxillary Arch (Upper 1-16)</div>
@@ -293,7 +291,6 @@
             </div>
           </div>
 
-          <!-- Legend -->
           <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs font-medium pt-2 border-t border-slate-100">
             <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-white border border-slate-400 rounded"></span> Healthy</span>
             <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-red-100 border border-red-500 rounded"></span> Caries / Pathology</span>
@@ -301,7 +298,6 @@
             <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-yellow-100 border border-yellow-500 rounded"></span> Crown / Implant</span>
           </div>
 
-          <!-- Tooth Update Form -->
           <div class="mt-4 p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 text-sm">
             <div class="text-xs sm:text-sm">Selected: <strong id="selected-tooth-label" class="text-indigo-600 font-bold">None</strong></div>
             <select id="tooth-condition-input" class="border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-xs outline-none">
@@ -323,14 +319,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Doctor Profiles & Performance Payroll</h1>
             <p class="text-xs text-slate-500">Calculates: Base + (Laser Pulses $\times$ Pulse Bonus) + Service Commissions</p>
           </div>
-          <button onclick="openModal('doctor-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+          <button onclick="openDoctorModalForAdd()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
             <i data-lucide="plus" class="w-4 h-4"></i> Add Doctor
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[750px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Doctor</th>
@@ -339,6 +335,7 @@
                   <th class="p-3">Laser Bonus</th>
                   <th class="p-3">Commission %</th>
                   <th class="p-3">Net Payable Salary</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="doctor-table-body" class="divide-y divide-slate-100"></tbody>
@@ -354,14 +351,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Services & Laser Packages</h1>
             <p class="text-xs text-slate-500">Configure retail prices, direct costs, and standard pulse allotments</p>
           </div>
-          <button onclick="openModal('service-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+          <button onclick="openServiceModalForAdd()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
             <i data-lucide="plus" class="w-4 h-4"></i> New Service
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[650px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Service Name</th>
@@ -369,6 +366,7 @@
                   <th class="p-3">Retail Price</th>
                   <th class="p-3">Gross Margin</th>
                   <th class="p-3">Default Laser Pulses</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="services-table-body" class="divide-y divide-slate-100"></tbody>
@@ -384,14 +382,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Financial Ledger & Invoices</h1>
             <p class="text-xs text-slate-500">Multi-payment logging (Cash, Visa, Bank Transfer, ValU/Installments)</p>
           </div>
-          <button onclick="openModal('invoice-modal')" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+          <button onclick="openInvoiceModalForAdd()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
             <i data-lucide="file-plus" class="w-4 h-4"></i> Generate Invoice
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[650px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[700px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Date</th>
@@ -399,7 +397,7 @@
                   <th class="p-3">Amount</th>
                   <th class="p-3">Payment Method</th>
                   <th class="p-3">Status</th>
-                  <th class="p-3">Actions</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="financials-table-body" class="divide-y divide-slate-100"></tbody>
@@ -415,14 +413,14 @@
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Clinical Consumables & Inventory</h1>
             <p class="text-xs text-slate-500">Cryogen gas tanks, Botox units, Hyaluronic fillers, and surgical consumables</p>
           </div>
-          <button onclick="openModal('inventory-modal')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow transition">
+          <button onclick="openInventoryModalForAdd()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow transition">
             + Add Stock Item
           </button>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <table class="w-full text-left text-xs sm:text-sm min-w-[600px]">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[650px]">
               <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
                 <tr>
                   <th class="p-3">Item Name</th>
@@ -430,6 +428,7 @@
                   <th class="p-3">Unit Cost</th>
                   <th class="p-3">Status</th>
                   <th class="p-3">Adjust Stock</th>
+                  <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="inventory-table-body" class="divide-y divide-slate-100"></tbody>
@@ -454,8 +453,9 @@
   <!-- Patient Modal -->
   <div id="patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Register Patient Profile</h3>
+      <h3 id="patient-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Register Patient Profile</h3>
       <form onsubmit="handleSavePatient(event)" class="space-y-3">
+        <input type="hidden" id="p-id" />
         <input type="text" id="p-name" placeholder="Patient Full Name" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="text" id="p-phone" placeholder="WhatsApp Phone (e.g. 201012345678)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <select id="p-journey" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none">
@@ -469,7 +469,7 @@
         <select id="p-doctor" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none"></select>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('patient-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Profile</button>
+          <button type="submit" id="patient-modal-submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Profile</button>
         </div>
       </form>
     </div>
@@ -478,8 +478,9 @@
   <!-- Appointment Modal -->
   <div id="appointment-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Book Clinical / Laser Session</h3>
+      <h3 id="appointment-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Book Clinical / Laser Session</h3>
       <form onsubmit="handleSaveAppointment(event)" class="space-y-3">
+        <input type="hidden" id="apt-id" />
         <select id="apt-patient" required class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none"></select>
         <select id="apt-doctor" required class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none"></select>
         <input type="datetime-local" id="apt-datetime" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
@@ -488,9 +489,15 @@
           <label class="text-xs font-semibold text-slate-600">Laser Pulses Fired in Session:</label>
           <input type="number" id="apt-pulses" placeholder="0" value="0" class="w-full border rounded-lg p-2.5 text-sm mt-1 outline-none focus:ring-1 focus:ring-indigo-500"/>
         </div>
+        <select id="apt-status" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('appointment-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Book & Log</button>
+          <button type="submit" id="appointment-modal-submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Book & Log</button>
         </div>
       </form>
     </div>
@@ -499,8 +506,9 @@
   <!-- Doctor Modal -->
   <div id="doctor-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Doctor Profile</h3>
+      <h3 id="doctor-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Doctor Profile</h3>
       <form onsubmit="handleSaveDoctor(event)" class="space-y-3">
+        <input type="hidden" id="doc-id" />
         <input type="text" id="doc-name" placeholder="Full Name (e.g. Dr. Tarek Zaki)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="email" id="doc-email" placeholder="Doctor Login Email" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="doc-base" placeholder="Base Salary ($)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
@@ -508,7 +516,7 @@
         <input type="number" step="0.01" id="doc-comm" placeholder="Commission Rate (e.g., 0.15 for 15%)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('doctor-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Doctor</button>
+          <button type="submit" id="doctor-modal-submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Doctor</button>
         </div>
       </form>
     </div>
@@ -517,15 +525,16 @@
   <!-- Service Modal -->
   <div id="service-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Service / Laser Package</h3>
+      <h3 id="service-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Service / Laser Package</h3>
       <form onsubmit="handleSaveService(event)" class="space-y-3">
+        <input type="hidden" id="srv-id" />
         <input type="text" id="srv-name" placeholder="Procedure Name (e.g. Full Legs Laser)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="srv-cost" placeholder="Internal Cost ($)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="srv-price" placeholder="Retail Price ($)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="srv-pulses" placeholder="Standard Pulses (if laser, otherwise 0)" value="0" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('service-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Package</button>
+          <button type="submit" id="service-modal-submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Package</button>
         </div>
       </form>
     </div>
@@ -534,8 +543,9 @@
   <!-- Invoice Modal -->
   <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Issue Payment Invoice</h3>
+      <h3 id="invoice-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Issue Payment Invoice</h3>
       <form onsubmit="handleSaveInvoice(event)" class="space-y-3">
+        <input type="hidden" id="inv-id" />
         <select id="inv-patient" required class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none"></select>
         <input type="number" step="0.01" id="inv-amount" placeholder="Amount ($)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <select id="inv-method" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none">
@@ -545,9 +555,14 @@
           <option value="Installments (ValU / Sympl)">Installments</option>
         </select>
         <input type="date" id="inv-date" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
+        <select id="inv-status" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none">
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+          <option value="Refunded">Refunded</option>
+        </select>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('invoice-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition">Log Payment</button>
+          <button type="submit" id="invoice-modal-submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition">Log Payment</button>
         </div>
       </form>
     </div>
@@ -556,15 +571,16 @@
   <!-- Inventory Modal -->
   <div id="inventory-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
-      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Inventory Consumable</h3>
+      <h3 id="inventory-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Inventory Consumable</h3>
       <form onsubmit="handleSaveInventory(event)" class="space-y-3">
+        <input type="hidden" id="inv-item-id" />
         <input type="text" id="inv-name" placeholder="Item Name (e.g. Cryogen Gas Tank, Juvederm 1ml)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="inv-qty" placeholder="In-Stock Units" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" id="inv-min" placeholder="Low Stock Alert Threshold" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <input type="number" step="0.01" id="inv-cost" placeholder="Unit Cost ($)" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500"/>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('inventory-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Item</button>
+          <button type="submit" id="inventory-modal-submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Save Item</button>
         </div>
       </form>
     </div>
@@ -911,8 +927,6 @@
         btn.classList.add('text-slate-400');
       });
       event.currentTarget.classList.add('bg-slate-800', 'text-slate-100');
-      
-      // Auto-close drawer on mobile when navigating
       closeSidebar();
     }
 
@@ -995,6 +1009,8 @@
         ? appState.appointments.filter(a => a.doctorId === currentUser.doctorId) 
         : appState.appointments;
 
+      const isOwner = currentUser.role === 'owner';
+
       tbody.innerHTML = list.map(apt => {
         const pat = appState.patients.find(p => p.id === apt.patientId);
         const doc = appState.doctors.find(d => d.id === apt.doctorId);
@@ -1006,8 +1022,14 @@
             <td class="p-3">${apt.serviceName}</td>
             <td class="p-3 font-bold font-mono text-rose-600">${Number(apt.pulsesUsed || 0).toLocaleString()}</td>
             <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">${apt.status}</span></td>
-            <td class="p-3">
-              <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs text-emerald-600 hover:underline">WhatsApp</button>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs text-emerald-600 hover:underline">WA</button>
+                ${isOwner ? `
+                  <button onclick="openAppointmentModalForEdit('${apt.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Edit</button>
+                  <button onclick="deleteAppointment('${apt.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+                ` : ''}
+              </div>
             </td>
           </tr>
         `;
@@ -1021,6 +1043,8 @@
         ? appState.patients.filter(p => p.assignedDoctorId === currentUser.doctorId) 
         : appState.patients;
 
+      const isOwner = currentUser.role === 'owner';
+
       tbody.innerHTML = list.map(pat => {
         const doc = appState.doctors.find(d => d.id === pat.assignedDoctorId);
         return `
@@ -1030,8 +1054,14 @@
             <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-800">${pat.journeyStage}</span></td>
             <td class="p-3 text-xs text-slate-500 max-w-xs truncate">${pat.medicalHistory}</td>
             <td class="p-3 text-xs">${doc ? doc.name : 'Unassigned'}</td>
-            <td class="p-3">
-              <button onclick="viewFinancialStatement('${pat.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Statements</button>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="viewFinancialStatement('${pat.id}')" class="text-xs text-emerald-600 hover:underline font-medium">Statement</button>
+                ${isOwner ? `
+                  <button onclick="openPatientModalForEdit('${pat.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Edit</button>
+                  <button onclick="deletePatient('${pat.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+                ` : ''}
+              </div>
             </td>
           </tr>
         `;
@@ -1040,6 +1070,8 @@
 
     function renderDoctors() {
       const tbody = document.getElementById('doctor-table-body');
+      const isOwner = currentUser?.role === 'owner';
+
       tbody.innerHTML = appState.doctors.map(doc => {
         const appointments = appState.appointments.filter(a => a.doctorId === doc.id);
         const totalPulses = appointments.reduce((sum, a) => sum + Number(a.pulsesUsed || 0), 0);
@@ -1054,6 +1086,12 @@
             <td class="p-3 font-mono text-emerald-600">+$${pulseBonus.toFixed(2)}</td>
             <td class="p-3 font-mono">${(doc.commissionRate * 100)}%</td>
             <td class="p-3 font-mono font-black text-slate-900 bg-slate-50">$${netSalary.toFixed(2)}</td>
+            <td class="p-3 text-right">
+              ${isOwner ? `
+                <button onclick="openDoctorModalForEdit('${doc.id}')" class="text-xs text-indigo-600 hover:underline font-medium mr-2">Edit</button>
+                <button onclick="deleteDoctor('${doc.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+              ` : '-'}
+            </td>
           </tr>
         `;
       }).join('');
@@ -1061,6 +1099,8 @@
 
     function renderServices() {
       const tbody = document.getElementById('services-table-body');
+      const isOwner = currentUser?.role === 'owner';
+
       tbody.innerHTML = appState.services.map(s => {
         const margin = s.price > 0 ? (((s.price - s.cost) / s.price) * 100).toFixed(0) : 0;
         return `
@@ -1070,6 +1110,12 @@
             <td class="p-3 font-mono font-bold text-slate-900">$${s.price}</td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700">${margin}% Margin</span></td>
             <td class="p-3 font-mono text-rose-600">${s.defaultPulses > 0 ? s.defaultPulses.toLocaleString() + ' Pulses' : 'N/A'}</td>
+            <td class="p-3 text-right">
+              ${isOwner ? `
+                <button onclick="openServiceModalForEdit('${s.id}')" class="text-xs text-indigo-600 hover:underline font-medium mr-2">Edit</button>
+                <button onclick="deleteService('${s.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+              ` : '-'}
+            </td>
           </tr>
         `;
       }).join('');
@@ -1077,6 +1123,8 @@
 
     function renderFinancials() {
       const tbody = document.getElementById('financials-table-body');
+      const isOwner = currentUser?.role === 'owner';
+
       tbody.innerHTML = appState.invoices.map(inv => {
         const pat = appState.patients.find(p => p.id === inv.patientId);
         return `
@@ -1086,8 +1134,14 @@
             <td class="p-3 font-bold font-mono">$${Number(inv.amount).toFixed(2)}</td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-100">${inv.paymentMethod}</span></td>
             <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-emerald-100 text-emerald-800">${inv.status}</span></td>
-            <td class="p-3">
-              <button onclick="viewFinancialStatement('${inv.patientId}')" class="text-xs text-indigo-600 hover:underline">Full Statement</button>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="viewFinancialStatement('${inv.patientId}')" class="text-xs text-emerald-600 hover:underline">Full Statement</button>
+                ${isOwner ? `
+                  <button onclick="openInvoiceModalForEdit('${inv.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Edit</button>
+                  <button onclick="deleteInvoice('${inv.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+                ` : ''}
+              </div>
             </td>
           </tr>
         `;
@@ -1096,6 +1150,8 @@
 
     function renderInventory() {
       const tbody = document.getElementById('inventory-table-body');
+      const isOwner = currentUser?.role === 'owner';
+
       tbody.innerHTML = appState.inventory.map(item => {
         const isLow = item.stockQty <= item.minAlertQty;
         return `
@@ -1111,6 +1167,12 @@
             <td class="p-3 space-x-1">
               <button onclick="changeStock('${item.id}', 1)" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold">+1</button>
               <button onclick="changeStock('${item.id}', -1)" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold">-1</button>
+            </td>
+            <td class="p-3 text-right">
+              ${isOwner ? `
+                <button onclick="openInventoryModalForEdit('${item.id}')" class="text-xs text-indigo-600 hover:underline font-medium mr-2">Edit</button>
+                <button onclick="deleteInventory('${item.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
+              ` : '-'}
             </td>
           </tr>
         `;
@@ -1217,7 +1279,7 @@
       }
     }
 
-    /* ================= 10. FORM ACTIONS WITH SUPABASE CLOUD INSERTS ================= */
+    /* ================= 10. FORM ACTIONS WITH SUPABASE CLOUD INSERTS / UPDATES / DELETES ================= */
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -1234,11 +1296,37 @@
       });
     }
 
-    // 1. Save Patient to Cloud
+    /* ---- PATIENT CRUD ---- */
+    function openPatientModalForAdd() {
+      document.getElementById('patient-modal-title').textContent = 'Register Patient Profile';
+      document.getElementById('patient-modal-submit').textContent = 'Save Profile';
+      document.getElementById('p-id').value = '';
+      document.getElementById('p-name').value = '';
+      document.getElementById('p-phone').value = '';
+      document.getElementById('p-journey').value = 'Inquiry';
+      document.getElementById('p-history').value = '';
+      document.getElementById('p-doctor').value = appState.doctors[0]?.id || '';
+      openModal('patient-modal');
+    }
+
+    function openPatientModalForEdit(id) {
+      const pat = appState.patients.find(p => p.id === id);
+      if (!pat) return;
+      document.getElementById('patient-modal-title').textContent = 'Edit Patient Profile';
+      document.getElementById('patient-modal-submit').textContent = 'Update Profile';
+      document.getElementById('p-id').value = pat.id;
+      document.getElementById('p-name').value = pat.name;
+      document.getElementById('p-phone').value = pat.phone;
+      document.getElementById('p-journey').value = pat.journeyStage;
+      document.getElementById('p-history').value = pat.medicalHistory || '';
+      document.getElementById('p-doctor').value = pat.assignedDoctorId || '';
+      openModal('patient-modal');
+    }
+
     async function handleSavePatient(e) {
       e.preventDefault();
-      const newPat = {
-        id: 'pat-' + Date.now(),
+      const existingId = document.getElementById('p-id').value;
+      const patData = {
         name: document.getElementById('p-name').value,
         phone: document.getElementById('p-phone').value,
         journeyStage: document.getElementById('p-journey').value,
@@ -1246,65 +1334,178 @@
         assignedDoctorId: document.getElementById('p-doctor').value || null
       };
 
-      appState.patients.push(newPat);
+      if (existingId) {
+        // UPDATE
+        const idx = appState.patients.findIndex(p => p.id === existingId);
+        if (idx !== -1) {
+          appState.patients[idx] = { id: existingId, ...patData };
+        }
+        logAction('PATIENT_UPDATED', `Updated patient ${patData.name}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('patients').update({
+            name: patData.name,
+            phone: patData.phone,
+            journey_stage: patData.journeyStage,
+            medical_history: patData.medicalHistory,
+            assigned_doctor_id: patData.assignedDoctorId
+          }).eq('id', existingId);
+        }
+      } else {
+        // CREATE
+        const newId = 'pat-' + Date.now();
+        const newPat = { id: newId, ...patData };
+        appState.patients.push(newPat);
+        logAction('PATIENT_REGISTRATION', `Registered patient ${newPat.name}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('patients').insert([{
+            id: newPat.id,
+            name: newPat.name,
+            phone: newPat.phone,
+            journey_stage: newPat.journeyStage,
+            medical_history: newPat.medicalHistory,
+            assigned_doctor_id: newPat.assignedDoctorId
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('PATIENT_REGISTRATION', `Registered patient ${newPat.name}`);
       closeModal('patient-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('patients').insert([{
-          id: newPat.id,
-          name: newPat.name,
-          phone: newPat.phone,
-          journey_stage: newPat.journeyStage,
-          medical_history: newPat.medicalHistory,
-          assigned_doctor_id: newPat.assignedDoctorId
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // 2. Save Appointment to Cloud
+    async function deletePatient(id) {
+      if (!confirm('Are you sure you want to delete this patient profile and all linked records?')) return;
+      appState.patients = appState.patients.filter(p => p.id !== id);
+      persistLocal();
+      logAction('PATIENT_DELETED', `Deleted patient ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('patients').delete().eq('id', id);
+      }
+    }
+
+    /* ---- APPOINTMENT CRUD ---- */
+    function openAppointmentModalForAdd() {
+      document.getElementById('appointment-modal-title').textContent = 'Book Clinical / Laser Session';
+      document.getElementById('appointment-modal-submit').textContent = 'Book & Log';
+      document.getElementById('apt-id').value = '';
+      document.getElementById('apt-datetime').value = '';
+      document.getElementById('apt-service').value = '';
+      document.getElementById('apt-pulses').value = 0;
+      document.getElementById('apt-status').value = 'Scheduled';
+      openModal('appointment-modal');
+    }
+
+    function openAppointmentModalForEdit(id) {
+      const apt = appState.appointments.find(a => a.id === id);
+      if (!apt) return;
+      document.getElementById('appointment-modal-title').textContent = 'Edit Clinical Session';
+      document.getElementById('appointment-modal-submit').textContent = 'Update Session';
+      document.getElementById('apt-id').value = apt.id;
+      document.getElementById('apt-patient').value = apt.patientId;
+      document.getElementById('apt-doctor').value = apt.doctorId;
+      document.getElementById('apt-datetime').value = apt.sessionTime;
+      document.getElementById('apt-service').value = apt.serviceName;
+      document.getElementById('apt-pulses').value = apt.pulsesUsed;
+      document.getElementById('apt-status').value = apt.status;
+      openModal('appointment-modal');
+    }
+
     async function handleSaveAppointment(e) {
       e.preventDefault();
-      const newApt = {
-        id: 'apt-' + Date.now(),
+      const existingId = document.getElementById('apt-id').value;
+      const aptData = {
         patientId: document.getElementById('apt-patient').value,
         doctorId: document.getElementById('apt-doctor').value,
         sessionTime: document.getElementById('apt-datetime').value,
         serviceName: document.getElementById('apt-service').value,
         pulsesUsed: Number(document.getElementById('apt-pulses').value || 0),
-        status: 'Scheduled'
+        status: document.getElementById('apt-status').value
       };
 
-      appState.appointments.push(newApt);
+      if (existingId) {
+        const idx = appState.appointments.findIndex(a => a.id === existingId);
+        if (idx !== -1) appState.appointments[idx] = { id: existingId, ...aptData };
+        logAction('SESSION_UPDATED', `Updated session for ${aptData.serviceName} (${aptData.pulsesUsed} pulses)`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('appointments').update({
+            patient_id: aptData.patientId,
+            doctor_id: aptData.doctorId,
+            session_time: aptData.sessionTime,
+            service_name: aptData.serviceName,
+            pulses_used: aptData.pulsesUsed,
+            status: aptData.status
+          }).eq('id', existingId);
+        }
+      } else {
+        const newId = 'apt-' + Date.now();
+        const newApt = { id: newId, ...aptData };
+        appState.appointments.push(newApt);
+        logAction('SESSION_BOOKED', `Session scheduled for ${newApt.serviceName} (${newApt.pulsesUsed} pulses)`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('appointments').insert([{
+            id: newApt.id,
+            patient_id: newApt.patientId,
+            doctor_id: newApt.doctorId,
+            session_time: newApt.sessionTime,
+            service_name: newApt.serviceName,
+            pulses_used: newApt.pulsesUsed,
+            status: newApt.status
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('SESSION_BOOKED', `Session scheduled for ${newApt.serviceName} (${newApt.pulsesUsed} pulses)`);
       closeModal('appointment-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('appointments').insert([{
-          id: newApt.id,
-          patient_id: newApt.patientId,
-          doctor_id: newApt.doctorId,
-          session_time: newApt.sessionTime,
-          service_name: newApt.serviceName,
-          pulses_used: newApt.pulsesUsed,
-          status: newApt.status
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // 3. Save Doctor to Cloud
+    async function deleteAppointment(id) {
+      if (!confirm('Are you sure you want to delete this session?')) return;
+      appState.appointments = appState.appointments.filter(a => a.id !== id);
+      persistLocal();
+      logAction('SESSION_DELETED', `Deleted appointment ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('appointments').delete().eq('id', id);
+      }
+    }
+
+    /* ---- DOCTOR CRUD ---- */
+    function openDoctorModalForAdd() {
+      document.getElementById('doctor-modal-title').textContent = 'Add Doctor Profile';
+      document.getElementById('doctor-modal-submit').textContent = 'Save Doctor';
+      document.getElementById('doc-id').value = '';
+      document.getElementById('doc-name').value = '';
+      document.getElementById('doc-email').value = '';
+      document.getElementById('doc-base').value = '';
+      document.getElementById('doc-pulse-rate').value = '0.05';
+      document.getElementById('doc-comm').value = '0.15';
+      openModal('doctor-modal');
+    }
+
+    function openDoctorModalForEdit(id) {
+      const doc = appState.doctors.find(d => d.id === id);
+      if (!doc) return;
+      document.getElementById('doctor-modal-title').textContent = 'Edit Doctor Profile';
+      document.getElementById('doctor-modal-submit').textContent = 'Update Doctor';
+      document.getElementById('doc-id').value = doc.id;
+      document.getElementById('doc-name').value = doc.name;
+      document.getElementById('doc-email').value = doc.email;
+      document.getElementById('doc-base').value = doc.baseSalary;
+      document.getElementById('doc-pulse-rate').value = doc.pulseRate;
+      document.getElementById('doc-comm').value = doc.commissionRate;
+      openModal('doctor-modal');
+    }
+
     async function handleSaveDoctor(e) {
       e.preventDefault();
-      const newDoc = {
-        id: 'doc-' + Date.now(),
+      const existingId = document.getElementById('doc-id').value;
+      const docData = {
         name: document.getElementById('doc-name').value,
         email: document.getElementById('doc-email').value,
         baseSalary: Number(document.getElementById('doc-base').value),
@@ -1312,119 +1513,301 @@
         commissionRate: Number(document.getElementById('doc-comm').value)
       };
 
-      appState.doctors.push(newDoc);
+      if (existingId) {
+        const idx = appState.doctors.findIndex(d => d.id === existingId);
+        if (idx !== -1) appState.doctors[idx] = { id: existingId, ...docData };
+        logAction('DOCTOR_UPDATED', `Updated doctor ${docData.name}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('doctors').update({
+            name: docData.name,
+            email: docData.email,
+            base_salary: docData.baseSalary,
+            pulse_rate: docData.pulseRate,
+            commission_rate: docData.commissionRate
+          }).eq('id', existingId);
+        }
+      } else {
+        const newId = 'doc-' + Date.now();
+        const newDoc = { id: newId, ...docData };
+        appState.doctors.push(newDoc);
+        logAction('DOCTOR_ADDED', `Doctor ${newDoc.name} registered`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('doctors').insert([{
+            id: newDoc.id,
+            name: newDoc.name,
+            email: newDoc.email,
+            base_salary: newDoc.baseSalary,
+            pulse_rate: newDoc.pulseRate,
+            commission_rate: newDoc.commissionRate
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('DOCTOR_ADDED', `Doctor ${newDoc.name} registered`);
       closeModal('doctor-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('doctors').insert([{
-          id: newDoc.id,
-          name: newDoc.name,
-          email: newDoc.email,
-          base_salary: newDoc.baseSalary,
-          pulse_rate: newDoc.pulseRate,
-          commission_rate: newDoc.commissionRate
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // 4. Save Service to Cloud
+    async function deleteDoctor(id) {
+      if (!confirm('Are you sure you want to delete this doctor? Their linked sessions and patients will remain.')) return;
+      appState.doctors = appState.doctors.filter(d => d.id !== id);
+      persistLocal();
+      logAction('DOCTOR_DELETED', `Deleted doctor ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('doctors').delete().eq('id', id);
+      }
+    }
+
+    /* ---- SERVICE CRUD ---- */
+    function openServiceModalForAdd() {
+      document.getElementById('service-modal-title').textContent = 'Add Service / Laser Package';
+      document.getElementById('service-modal-submit').textContent = 'Save Package';
+      document.getElementById('srv-id').value = '';
+      document.getElementById('srv-name').value = '';
+      document.getElementById('srv-cost').value = '';
+      document.getElementById('srv-price').value = '';
+      document.getElementById('srv-pulses').value = 0;
+      openModal('service-modal');
+    }
+
+    function openServiceModalForEdit(id) {
+      const srv = appState.services.find(s => s.id === id);
+      if (!srv) return;
+      document.getElementById('service-modal-title').textContent = 'Edit Service / Package';
+      document.getElementById('service-modal-submit').textContent = 'Update Package';
+      document.getElementById('srv-id').value = srv.id;
+      document.getElementById('srv-name').value = srv.name;
+      document.getElementById('srv-cost').value = srv.cost;
+      document.getElementById('srv-price').value = srv.price;
+      document.getElementById('srv-pulses').value = srv.defaultPulses;
+      openModal('service-modal');
+    }
+
     async function handleSaveService(e) {
       e.preventDefault();
-      const newSrv = {
-        id: 'srv-' + Date.now(),
+      const existingId = document.getElementById('srv-id').value;
+      const srvData = {
         name: document.getElementById('srv-name').value,
         cost: Number(document.getElementById('srv-cost').value),
         price: Number(document.getElementById('srv-price').value),
         defaultPulses: Number(document.getElementById('srv-pulses').value || 0)
       };
 
-      appState.services.push(newSrv);
+      if (existingId) {
+        const idx = appState.services.findIndex(s => s.id === existingId);
+        if (idx !== -1) appState.services[idx] = { id: existingId, ...srvData };
+        logAction('SERVICE_UPDATED', `Updated service ${srvData.name}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('services').update({
+            name: srvData.name,
+            cost: srvData.cost,
+            price: srvData.price,
+            default_pulses: srvData.defaultPulses
+          }).eq('id', existingId);
+        }
+      } else {
+        const newId = 'srv-' + Date.now();
+        const newSrv = { id: newId, ...srvData };
+        appState.services.push(newSrv);
+        logAction('SERVICE_CREATED', `Service ${newSrv.name} added`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('services').insert([{
+            id: newSrv.id,
+            name: newSrv.name,
+            cost: newSrv.cost,
+            price: newSrv.price,
+            default_pulses: newSrv.defaultPulses
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('SERVICE_CREATED', `Service ${newSrv.name} added`);
       closeModal('service-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('services').insert([{
-          id: newSrv.id,
-          name: newSrv.name,
-          cost: newSrv.cost,
-          price: newSrv.price,
-          default_pulses: newSrv.defaultPulses
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // 5. Save Invoice to Cloud
+    async function deleteService(id) {
+      if (!confirm('Are you sure you want to remove this service/package?')) return;
+      appState.services = appState.services.filter(s => s.id !== id);
+      persistLocal();
+      logAction('SERVICE_DELETED', `Deleted service ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('services').delete().eq('id', id);
+      }
+    }
+
+    /* ---- INVOICE CRUD ---- */
+    function openInvoiceModalForAdd() {
+      document.getElementById('invoice-modal-title').textContent = 'Issue Payment Invoice';
+      document.getElementById('invoice-modal-submit').textContent = 'Log Payment';
+      document.getElementById('inv-id').value = '';
+      document.getElementById('inv-amount').value = '';
+      document.getElementById('inv-method').value = 'Cash';
+      document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('inv-status').value = 'Paid';
+      openModal('invoice-modal');
+    }
+
+    function openInvoiceModalForEdit(id) {
+      const inv = appState.invoices.find(i => i.id === id);
+      if (!inv) return;
+      document.getElementById('invoice-modal-title').textContent = 'Edit Invoice';
+      document.getElementById('invoice-modal-submit').textContent = 'Update Invoice';
+      document.getElementById('inv-id').value = inv.id;
+      document.getElementById('inv-patient').value = inv.patientId;
+      document.getElementById('inv-amount').value = inv.amount;
+      document.getElementById('inv-method').value = inv.paymentMethod;
+      document.getElementById('inv-date').value = inv.invoiceDate;
+      document.getElementById('inv-status').value = inv.status;
+      openModal('invoice-modal');
+    }
+
     async function handleSaveInvoice(e) {
       e.preventDefault();
-      const newInv = {
-        id: 'inv-' + Date.now(),
+      const existingId = document.getElementById('inv-id').value;
+      const invData = {
         patientId: document.getElementById('inv-patient').value,
         amount: Number(document.getElementById('inv-amount').value),
         paymentMethod: document.getElementById('inv-method').value,
         invoiceDate: document.getElementById('inv-date').value,
-        status: 'Paid'
+        status: document.getElementById('inv-status').value
       };
 
-      appState.invoices.push(newInv);
+      if (existingId) {
+        const idx = appState.invoices.findIndex(i => i.id === existingId);
+        if (idx !== -1) appState.invoices[idx] = { id: existingId, ...invData };
+        logAction('INVOICE_UPDATED', `Updated invoice #${existingId} of $${invData.amount}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('invoices').update({
+            patient_id: invData.patientId,
+            amount: invData.amount,
+            payment_method: invData.paymentMethod,
+            invoice_date: invData.invoiceDate,
+            status: invData.status
+          }).eq('id', existingId);
+        }
+      } else {
+        const newId = 'inv-' + Date.now();
+        const newInv = { id: newId, ...invData };
+        appState.invoices.push(newInv);
+        logAction('INVOICE_ISSUED', `Invoice of $${newInv.amount} logged via ${newInv.paymentMethod}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('invoices').insert([{
+            id: newInv.id,
+            patient_id: newInv.patientId,
+            amount: newInv.amount,
+            payment_method: newInv.paymentMethod,
+            invoice_date: newInv.invoiceDate,
+            status: newInv.status
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('INVOICE_ISSUED', `Invoice of $${newInv.amount} logged via ${newInv.paymentMethod}`);
       closeModal('invoice-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('invoices').insert([{
-          id: newInv.id,
-          patient_id: newInv.patientId,
-          amount: newInv.amount,
-          payment_method: newInv.paymentMethod,
-          invoice_date: newInv.invoiceDate,
-          status: newInv.status
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // 6. Save Inventory Consumable to Cloud
+    async function deleteInvoice(id) {
+      if (!confirm('Are you sure you want to delete this invoice record?')) return;
+      appState.invoices = appState.invoices.filter(i => i.id !== id);
+      persistLocal();
+      logAction('INVOICE_DELETED', `Deleted invoice ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('invoices').delete().eq('id', id);
+      }
+    }
+
+    /* ---- INVENTORY CRUD ---- */
+    function openInventoryModalForAdd() {
+      document.getElementById('inventory-modal-title').textContent = 'Add Inventory Consumable';
+      document.getElementById('inventory-modal-submit').textContent = 'Save Item';
+      document.getElementById('inv-item-id').value = '';
+      document.getElementById('inv-name').value = '';
+      document.getElementById('inv-qty').value = '';
+      document.getElementById('inv-min').value = '5';
+      document.getElementById('inv-cost').value = '';
+      openModal('inventory-modal');
+    }
+
+    function openInventoryModalForEdit(id) {
+      const item = appState.inventory.find(i => i.id === id);
+      if (!item) return;
+      document.getElementById('inventory-modal-title').textContent = 'Edit Consumable Item';
+      document.getElementById('inventory-modal-submit').textContent = 'Update Item';
+      document.getElementById('inv-item-id').value = item.id;
+      document.getElementById('inv-name').value = item.itemName;
+      document.getElementById('inv-qty').value = item.stockQty;
+      document.getElementById('inv-min').value = item.minAlertQty;
+      document.getElementById('inv-cost').value = item.unitCost;
+      openModal('inventory-modal');
+    }
+
     async function handleSaveInventory(e) {
       e.preventDefault();
-      const newItem = {
-        id: 'item-' + Date.now(),
+      const existingId = document.getElementById('inv-item-id').value;
+      const itemData = {
         itemName: document.getElementById('inv-name').value,
         stockQty: Number(document.getElementById('inv-qty').value),
         minAlertQty: Number(document.getElementById('inv-min').value),
         unitCost: Number(document.getElementById('inv-cost').value)
       };
 
-      appState.inventory.push(newItem);
+      if (existingId) {
+        const idx = appState.inventory.findIndex(i => i.id === existingId);
+        if (idx !== -1) appState.inventory[idx] = { id: existingId, ...itemData };
+        logAction('INVENTORY_UPDATED', `Updated stock item ${itemData.itemName}`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('inventory').update({
+            item_name: itemData.itemName,
+            stock_qty: itemData.stockQty,
+            min_alert_qty: itemData.minAlertQty,
+            unit_cost: itemData.unitCost
+          }).eq('id', existingId);
+        }
+      } else {
+        const newId = 'item-' + Date.now();
+        const newItem = { id: newId, ...itemData };
+        appState.inventory.push(newItem);
+        logAction('INVENTORY_ADDED', `Consumable ${newItem.itemName} added`);
+        if (supabaseClient && navigator.onLine) {
+          await supabaseClient.from('inventory').insert([{
+            id: newItem.id,
+            item_name: newItem.itemName,
+            stock_qty: newItem.stockQty,
+            min_alert_qty: newItem.minAlertQty,
+            unit_cost: newItem.unitCost
+          }]);
+        }
+      }
+
       persistLocal();
-      logAction('INVENTORY_ADDED', `Consumable ${newItem.itemName} added`);
       closeModal('inventory-modal');
       renderAll();
-
-      if (supabaseClient && navigator.onLine) {
-        const { error } = await supabaseClient.from('inventory').insert([{
-          id: newItem.id,
-          item_name: newItem.itemName,
-          stock_qty: newItem.stockQty,
-          min_alert_qty: newItem.minAlertQty,
-          unit_cost: newItem.unitCost
-        }]);
-        if (error) console.error("Cloud save error:", error);
-      }
       e.target.reset();
     }
 
-    // Adjust Stock Quantity & Cloud Sync
+    async function deleteInventory(id) {
+      if (!confirm('Are you sure you want to delete this inventory item?')) return;
+      appState.inventory = appState.inventory.filter(i => i.id !== id);
+      persistLocal();
+      logAction('INVENTORY_DELETED', `Deleted inventory item ID: ${id}`);
+      renderAll();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('inventory').delete().eq('id', id);
+      }
+    }
+
     async function changeStock(itemId, delta) {
       const item = appState.inventory.find(i => i.id === itemId);
       if (item) {
