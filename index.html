@@ -448,7 +448,7 @@
     </main>
   </div>
 
-  <!-- ================= POPUP MODALS (Keyboards & Small Viewports Safe) ================= -->
+  <!-- ================= POPUP MODALS ================= -->
 
   <!-- Patient Modal -->
   <div id="patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
@@ -930,19 +930,100 @@
       closeSidebar();
     }
 
-    /* ================= 7. WHATSAPP AUTOMATION ================= */
-    function sendWhatsAppSession(phone, patientName, date, service) {
-      const formattedDate = date.replace('T', ' at ');
-      const msg = `Hello ${patientName},\nThis is Aura Aesthetic Clinic reminding you of your session for *${service}* scheduled on *${formattedDate}*.\n\nPlease reply 1 to Confirm or 2 to Reschedule.`;
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    /* ================= 7. WHATSAPP DIRECT CHAT AUTOMATION ================= */
+    function sanitizePhoneNumber(rawPhone) {
+      if (!rawPhone) return '';
+      let cleaned = rawPhone.toString().replace(/\D/g, '');
+      
+      // Strip leading international double zero
+      if (cleaned.startsWith('00')) {
+        cleaned = cleaned.substring(2);
+      }
+      
+      // Auto-format local Egyptian phone numbers (01xxxxxxxxx -> 201xxxxxxxxx)
+      if (cleaned.length === 11 && cleaned.startsWith('01')) {
+        cleaned = '20' + cleaned.substring(1);
+      }
+      
+      return cleaned;
+    }
+
+    function formatSessionDateTime(dateTimeStr) {
+      if (!dateTimeStr) return { date: 'Scheduled Date', time: 'Scheduled Time' };
+      try {
+        const dt = new Date(dateTimeStr);
+        if (isNaN(dt.getTime())) {
+          const parts = dateTimeStr.split('T');
+          return { date: parts[0] || dateTimeStr, time: parts[1] || '' };
+        }
+        const dateFormatted = dt.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        const timeFormatted = dt.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        return { date: dateFormatted, time: timeFormatted };
+      } catch (e) {
+        return { date: dateTimeStr, time: '' };
+      }
+    }
+
+    function sendWhatsAppSession(appointmentId) {
+      const apt = appState.appointments.find(a => a.id === appointmentId);
+      if (!apt) {
+        alert('Appointment record could not be found.');
+        return;
+      }
+
+      const pat = appState.patients.find(p => p.id === apt.patientId);
+      if (!pat || !pat.phone) {
+        alert('This patient does not have a phone number on file. Please edit their profile first.');
+        return;
+      }
+
+      const doc = appState.doctors.find(d => d.id === apt.doctorId);
+      const doctorName = doc ? doc.name : 'Aura Clinical Team';
+      const cleanPhone = sanitizePhoneNumber(pat.phone);
+
+      if (cleanPhone.length < 8) {
+        alert(`The phone number "${pat.phone}" is invalid. Please ensure it includes the country code (e.g. 201012345678).`);
+        return;
+      }
+
+      const { date, time } = formatSessionDateTime(apt.sessionTime);
+
+      const message = 
+`Dear ${pat.name}, 🌸
+
+This is a confirmation message from *Aura Aesthetic Clinic* regarding your upcoming session:
+
+📋 *Treatment:* ${apt.serviceName}
+👨‍⚕️ *Doctor:* ${doctorName}
+📅 *Date:* ${date}
+⏰ *Time:* ${time}
+
+📍 *Location:* Aura Aesthetic Clinic
+
+Please reply to confirm your attendance:
+• Reply *1* to *Confirm*
+• Reply *2* to *Reschedule or Cancel*
+
+If you have any questions, feel free to reply directly to this chat. ✨`;
+
+      const url = `https://api.whatsapp.com/send/?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      logAction('WHATSAPP_DISPATCH', `Reminder sent to ${patientName} (${phone})`);
+      logAction('WHATSAPP_DISPATCH', `Dispatched confirmation message to ${pat.name} (${cleanPhone})`);
     }
 
     function runWhatsAppBot() {
       let count = appState.appointments.length;
-      alert(`WhatsApp Automation Bot Executed:\n\n• Checked ${count} active treatments.\n• Follow-up check-ins and post-op care guides dispatched.`);
-      logAction('WHATSAPP_BOT', `Bot checked ${count} sessions`);
+      alert(`WhatsApp Automation Bot Executed:\n\n• Processed ${count} active appointments.\n• Automated reminders & post-op care guides dispatched.`);
+      logAction('WHATSAPP_BOT', `Bot automated follow-up checked ${count} sessions`);
     }
 
     /* ================= 8. RENDER ENGINE ================= */
@@ -993,7 +1074,7 @@
             <td class="p-3">${apt.serviceName}</td>
             <td class="p-3 font-bold text-rose-600 font-mono">${(apt.pulsesUsed || 0).toLocaleString()}</td>
             <td class="p-3">
-              <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded font-medium flex items-center gap-1 w-max">
+              <button onclick="sendWhatsAppSession('${apt.id}')" class="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded font-medium flex items-center gap-1 w-max transition">
                 <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Send WA
               </button>
             </td>
@@ -1024,7 +1105,7 @@
             <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">${apt.status}</span></td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs text-emerald-600 hover:underline">WA</button>
+                <button onclick="sendWhatsAppSession('${apt.id}')" class="text-xs text-emerald-600 hover:underline font-medium">WA</button>
                 ${isOwner ? `
                   <button onclick="openAppointmentModalForEdit('${apt.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Edit</button>
                   <button onclick="deleteAppointment('${apt.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
@@ -1136,7 +1217,7 @@
             <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-emerald-100 text-emerald-800">${inv.status}</span></td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <button onclick="viewFinancialStatement('${inv.patientId}')" class="text-xs text-emerald-600 hover:underline">Full Statement</button>
+                <button onclick="viewFinancialStatement('${inv.patientId}')" class="text-xs text-emerald-600 hover:underline">Statement</button>
                 ${isOwner ? `
                   <button onclick="openInvoiceModalForEdit('${inv.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Edit</button>
                   <button onclick="deleteInvoice('${inv.id}')" class="text-xs text-rose-600 hover:underline font-medium">Delete</button>
