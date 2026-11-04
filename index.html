@@ -19,7 +19,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans h-screen h-[100dvh] flex flex-col overflow-hidden">
 
-  <!-- ================= AUTHENTICATION / LOGIN SCREEN ================= -->
+  <!-- ================= AUTHENTICATION / LOGIN & SIGN-UP SCREEN ================= -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 border border-slate-100 my-auto">
       <div class="text-center mb-6">
@@ -27,20 +27,53 @@
           <i data-lucide="sparkles" class="w-6 h-6"></i>
         </div>
         <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Aura Aesthetic Clinic</h1>
-        <p class="text-xs text-slate-500 mt-1">Sign in with verified clinical staff credentials</p>
+        <p class="text-xs text-slate-500 mt-1">Clinical portal & management suite</p>
       </div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <!-- Auth Toggle Tabs -->
+      <div class="flex border-b border-slate-200 mb-5">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-indigo-600 text-indigo-600">
+          Sign In
+        </button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600">
+          Manager Sign Up
+        </button>
+      </div>
+
+      <!-- 1. SIGN IN FORM -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
-          <input type="email" id="auth-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="doctor@auraclinic.com" />
+          <input type="email" id="auth-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="staff@auraclinic.com" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Password</label>
           <input type="password" id="auth-password" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
         </div>
-        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
+        <button type="submit" id="btn-login" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
           Enter Clinical Portal
+        </button>
+      </form>
+
+      <!-- 2. MANAGER INITIAL SIGN UP FORM -->
+      <form id="form-signup" onsubmit="handleInitialManagerSignUp(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
+          <input type="text" id="signup-name" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Dr. Director" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Manager Email</label>
+          <input type="email" id="signup-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="owner@auraclinic.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Password (min 6 chars)</label>
+          <input type="password" id="signup-password" minlength="6" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
+        </div>
+        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800">
+          This account will be granted <strong>Owner/Manager</strong> administrative access across all financials and staff controls.
+        </div>
+        <button type="submit" id="btn-signup" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-emerald-600/30">
+          Create Manager Account
         </button>
       </form>
 
@@ -123,6 +156,9 @@
           <!-- MANAGEMENT ONLY TABS -->
           <div class="mgmt-only pt-3 border-t border-slate-800 mt-2 space-y-1">
             <span class="text-[10px] tracking-wider uppercase text-slate-500 font-bold px-3">Management Only</span>
+            <button onclick="navigate('staff')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0 text-emerald-400"></i> <span>Staff & Accounts</span>
+            </button>
             <button onclick="navigate('doctors')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
               <i data-lucide="user-check" class="w-4 h-4 flex-shrink-0"></i> <span>Doctors & Salaries</span>
             </button>
@@ -203,7 +239,37 @@
         </div>
       </section>
 
-      <!-- 2. CALENDAR & SESSIONS -->
+      <!-- 2. STAFF & ACCOUNTS (MANAGEMENT ONLY) -->
+      <section id="sec-staff" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Staff Accounts & Access Control</h1>
+            <p class="text-xs text-slate-500">Create and manage logins for Managers/Owners and Doctors</p>
+          </div>
+          <button onclick="openStaffAccountModal()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 font-medium shadow transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Create New Staff Account
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+          <div class="overflow-x-auto -mx-4 sm:mx-0">
+            <table class="w-full text-left text-xs sm:text-sm min-w-[650px]">
+              <thead class="bg-slate-50 text-slate-700 uppercase text-[10px] sm:text-xs font-semibold">
+                <tr>
+                  <th class="p-3">Name</th>
+                  <th class="p-3">Email Address</th>
+                  <th class="p-3">Role / Clearance</th>
+                  <th class="p-3">Linked Doctor ID</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staff-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CALENDAR & SESSIONS -->
       <section id="sec-calendar" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -235,7 +301,7 @@
         </div>
       </section>
 
-      <!-- 3. PATIENTS & JOURNEY -->
+      <!-- 4. PATIENTS & JOURNEY -->
       <section id="sec-patients" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -266,7 +332,7 @@
         </div>
       </section>
 
-      <!-- 4. DENTAL & FACIAL AESTHETIC CHART -->
+      <!-- 5. DENTAL & FACIAL AESTHETIC CHART -->
       <section id="sec-dental" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -312,7 +378,7 @@
         </div>
       </section>
 
-      <!-- 5. DOCTORS & PERFORMANCE SALARY ENGINE -->
+      <!-- 6. DOCTORS & PERFORMANCE SALARY ENGINE -->
       <section id="sec-doctors" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -344,7 +410,7 @@
         </div>
       </section>
 
-      <!-- 6. SERVICES & LASER PACKAGES -->
+      <!-- 7. SERVICES & LASER PACKAGES -->
       <section id="sec-services" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -375,7 +441,7 @@
         </div>
       </section>
 
-      <!-- 7. FINANCIAL BOOKS & INVOICES -->
+      <!-- 8. FINANCIAL BOOKS & INVOICES -->
       <section id="sec-financials" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -406,7 +472,7 @@
         </div>
       </section>
 
-      <!-- 8. INVENTORY & CONSUMABLES -->
+      <!-- 9. INVENTORY & CONSUMABLES -->
       <section id="sec-inventory" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -437,7 +503,7 @@
         </div>
       </section>
 
-      <!-- 9. AUDIT TRAIL LOGS -->
+      <!-- 10. AUDIT TRAIL LOGS -->
       <section id="sec-logs" class="page-sec hidden space-y-6 max-w-7xl mx-auto">
         <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Audit Trail & Action Logs</h1>
         <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm font-mono text-[11px] sm:text-xs">
@@ -450,7 +516,59 @@
 
   <!-- ================= POPUP MODALS ================= -->
 
-  <!-- Patient Modal -->
+  <!-- 1. STAFF ACCOUNT MODAL (FOR MANAGERS) -->
+  <div id="staff-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
+      <h3 class="font-bold text-base sm:text-lg mb-3 text-slate-900">Create New Staff Account</h3>
+      <form onsubmit="handleCreateStaffAccount(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="staff-name" required placeholder="e.g. Dr. Hisham Fawzy" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Login Email</label>
+          <input type="email" id="staff-email" required placeholder="staff@auraclinic.com" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Password (min 6 chars)</label>
+          <input type="password" id="staff-password" minlength="6" required placeholder="••••••••" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Account Role</label>
+          <select id="staff-role" onchange="toggleDoctorFieldsInStaffModal()" class="w-full border rounded-lg p-2.5 text-sm bg-white outline-none">
+            <option value="owner">Owner / Clinic Manager (Full Financial Access)</option>
+            <option value="doctor" selected>Doctor (Restricted to Assigned Patients)</option>
+          </select>
+        </div>
+
+        <!-- Dynamic Fields if Role is Doctor -->
+        <div id="staff-doctor-fields" class="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Doctor Payroll Settings</div>
+          <div>
+            <label class="block text-xs text-slate-600 mb-1">Monthly Base Salary ($)</label>
+            <input type="number" id="staff-doc-base" value="2500" class="w-full border rounded-lg p-2 text-sm bg-white outline-none" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] text-slate-600 mb-1">Laser Pulse Rate ($)</label>
+              <input type="number" step="0.01" id="staff-doc-pulse" value="0.05" class="w-full border rounded-lg p-2 text-sm bg-white outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-600 mb-1">Commission Rate</label>
+              <input type="number" step="0.01" id="staff-doc-comm" value="0.15" class="w-full border rounded-lg p-2 text-sm bg-white outline-none" placeholder="0.15 for 15%" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('staff-modal')" class="px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="btn-save-staff" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition">Create Staff User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. PATIENT MODAL -->
   <div id="patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="patient-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Register Patient Profile</h3>
@@ -475,7 +593,7 @@
     </div>
   </div>
 
-  <!-- Appointment Modal -->
+  <!-- 3. APPOINTMENT MODAL -->
   <div id="appointment-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="appointment-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Book Clinical / Laser Session</h3>
@@ -503,7 +621,7 @@
     </div>
   </div>
 
-  <!-- Doctor Modal -->
+  <!-- 4. DOCTOR MODAL -->
   <div id="doctor-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="doctor-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Doctor Profile</h3>
@@ -522,7 +640,7 @@
     </div>
   </div>
 
-  <!-- Service Modal -->
+  <!-- 5. SERVICE MODAL -->
   <div id="service-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="service-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Service / Laser Package</h3>
@@ -540,7 +658,7 @@
     </div>
   </div>
 
-  <!-- Invoice Modal -->
+  <!-- 6. INVOICE MODAL -->
   <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="invoice-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Issue Payment Invoice</h3>
@@ -568,7 +686,7 @@
     </div>
   </div>
 
-  <!-- Inventory Modal -->
+  <!-- 7. INVENTORY MODAL -->
   <div id="inventory-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
       <h3 id="inventory-modal-title" class="font-bold text-base sm:text-lg mb-3 text-slate-900">Add Inventory Consumable</h3>
@@ -586,7 +704,7 @@
     </div>
   </div>
 
-  <!-- Supabase Credentials Modal -->
+  <!-- 8. SUPABASE CREDENTIALS MODAL -->
   <div id="supabase-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4 max-h-[90dvh] overflow-y-auto my-auto">
       <div class="flex items-center gap-2">
@@ -620,6 +738,7 @@
     let supabaseClient = null;
 
     let appState = {
+      staffProfiles: [],
       doctors: [],
       patients: [],
       services: [],
@@ -646,6 +765,26 @@
       }
       if (overlay && !overlay.classList.contains('hidden')) {
         overlay.classList.add('hidden');
+      }
+    }
+
+    /* Switch between Login and Sign Up on the auth card */
+    function switchAuthTab(mode) {
+      const formLogin = document.getElementById('form-login');
+      const formSignup = document.getElementById('form-signup');
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
+
+      if (mode === 'signup') {
+        formLogin.classList.add('hidden');
+        formSignup.classList.remove('hidden');
+        tabLogin.className = "flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        tabSignup.className = "flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-emerald-600 text-emerald-600";
+      } else {
+        formSignup.classList.add('hidden');
+        formLogin.classList.remove('hidden');
+        tabSignup.className = "flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+        tabLogin.className = "flex-1 py-2 text-center text-xs sm:text-sm font-bold border-b-2 border-indigo-600 text-indigo-600";
       }
     }
 
@@ -716,7 +855,13 @@
       if (!supabaseClient || !navigator.onLine) return;
 
       try {
-        // 1. Fetch Patients
+        // 1. Fetch Staff Profiles
+        const { data: staff } = await supabaseClient.from('staff_profiles').select('*');
+        if (staff) {
+          appState.staffProfiles = staff;
+        }
+
+        // 2. Fetch Patients
         const { data: pts } = await supabaseClient.from('patients').select('*');
         if (pts) {
           appState.patients = pts.map(p => ({
@@ -729,7 +874,7 @@
           }));
         }
 
-        // 2. Fetch Doctors
+        // 3. Fetch Doctors
         const { data: docs } = await supabaseClient.from('doctors').select('*');
         if (docs) {
           appState.doctors = docs.map(d => ({
@@ -742,7 +887,7 @@
           }));
         }
 
-        // 3. Fetch Appointments & Pulses
+        // 4. Fetch Appointments & Pulses
         const { data: apts } = await supabaseClient.from('appointments').select('*');
         if (apts) {
           appState.appointments = apts.map(a => ({
@@ -756,7 +901,7 @@
           }));
         }
 
-        // 4. Fetch Services
+        // 5. Fetch Services
         const { data: srvs } = await supabaseClient.from('services').select('*');
         if (srvs) {
           appState.services = srvs.map(s => ({
@@ -768,7 +913,7 @@
           }));
         }
 
-        // 5. Fetch Invoices
+        // 6. Fetch Invoices
         const { data: invs } = await supabaseClient.from('invoices').select('*');
         if (invs) {
           appState.invoices = invs.map(i => ({
@@ -781,7 +926,7 @@
           }));
         }
 
-        // 6. Fetch Inventory
+        // 7. Fetch Inventory
         const { data: items } = await supabaseClient.from('inventory').select('*');
         if (items) {
           appState.inventory = items.map(item => ({
@@ -793,7 +938,7 @@
           }));
         }
 
-        // 7. Fetch Dental Records
+        // 8. Fetch Dental Records
         const { data: dnt } = await supabaseClient.from('dental_records').select('*');
         if (dnt) {
           appState.dentalRecords = {};
@@ -816,7 +961,7 @@
       
       const emailInput = document.getElementById('auth-email').value.trim();
       const passwordInput = document.getElementById('auth-password').value;
-      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const submitBtn = document.getElementById('btn-login');
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Verifying credentials...';
@@ -885,6 +1030,66 @@
       submitBtn.textContent = 'Enter Clinical Portal';
     }
 
+    /* Manager Self Sign-up on the Login Screen */
+    async function handleInitialManagerSignUp(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const btn = document.getElementById('btn-signup');
+
+      btn.disabled = true;
+      btn.textContent = 'Creating Manager Account...';
+
+      if (!supabaseClient) initSupabase();
+
+      try {
+        // Register in Supabase Auth
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { full_name: name, role: 'owner' }
+          }
+        });
+
+        if (error) throw error;
+        if (!data.user) throw new Error("Could not create user account.");
+
+        // Insert into staff_profiles table as Owner
+        await supabaseClient.from('staff_profiles').upsert({
+          id: data.user.id,
+          email: email,
+          full_name: name,
+          role: 'owner',
+          doctor_id: null
+        });
+
+        alert("Manager account created successfully! Signing in...");
+
+        currentUser = {
+          id: data.user.id,
+          email: email,
+          name: name,
+          role: 'owner',
+          doctorId: null
+        };
+
+        localStorage.setItem('aura_active_session', JSON.stringify({
+          user: currentUser,
+          timestamp: Date.now()
+        }));
+
+        completeLoginUI();
+        await fetchCloudData();
+        logAction('MANAGER_SELF_REGISTER', `New manager ${name} registered.`);
+      } catch (err) {
+        alert("Sign Up Error: " + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Create Manager Account';
+      }
+    }
+
     function completeLoginUI() {
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('main-app').classList.remove('hidden');
@@ -920,7 +1125,8 @@
     /* ================= 6. NAVIGATION ================= */
     function navigate(secId) {
       document.querySelectorAll('.page-sec').forEach(s => s.classList.add('hidden'));
-      document.getElementById('sec-' + secId).classList.remove('hidden');
+      const targetSec = document.getElementById('sec-' + secId);
+      if (targetSec) targetSec.classList.remove('hidden');
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('bg-slate-800', 'text-slate-100');
@@ -930,7 +1136,143 @@
       closeSidebar();
     }
 
-    /* ================= 7. WHATSAPP DIRECT CHAT AUTOMATION ================= */
+    /* ================= 7. STAFF ACCOUNT CREATION BY MANAGER ================= */
+    function openStaffAccountModal() {
+      document.getElementById('staff-name').value = '';
+      document.getElementById('staff-email').value = '';
+      document.getElementById('staff-password').value = '';
+      document.getElementById('staff-role').value = 'doctor';
+      toggleDoctorFieldsInStaffModal();
+      openModal('staff-modal');
+    }
+
+    function toggleDoctorFieldsInStaffModal() {
+      const role = document.getElementById('staff-role').value;
+      const fields = document.getElementById('staff-doctor-fields');
+      if (role === 'doctor') {
+        fields.classList.remove('hidden');
+      } else {
+        fields.classList.add('hidden');
+      }
+    }
+
+    async function handleCreateStaffAccount(e) {
+      e.preventDefault();
+      const name = document.getElementById('staff-name').value.trim();
+      const email = document.getElementById('staff-email').value.trim();
+      const password = document.getElementById('staff-password').value;
+      const role = document.getElementById('staff-role').value;
+      const btn = document.getElementById('btn-save-staff');
+
+      btn.disabled = true;
+      btn.textContent = 'Provisioning Account...';
+
+      try {
+        // Use an isolated temporary client so the manager's active login session is NOT overwritten!
+        const isolatedAuthClient = supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+
+        // 1. Create User in Supabase Auth
+        const { data: authResult, error: authError } = await isolatedAuthClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { full_name: name, role: role }
+          }
+        });
+
+        if (authError) throw authError;
+        if (!authResult.user) throw new Error("Could not create user credentials in Supabase Auth.");
+
+        const newUserId = authResult.user.id;
+        let doctorId = null;
+
+        // 2. If creating a Doctor, automatically register their profile in the doctors table
+        if (role === 'doctor') {
+          doctorId = 'doc-' + Date.now();
+          const baseSal = Number(document.getElementById('staff-doc-base').value || 2500);
+          const pulseRt = Number(document.getElementById('staff-doc-pulse').value || 0.05);
+          const commRt = Number(document.getElementById('staff-doc-comm').value || 0.15);
+
+          const newDoctor = {
+            id: doctorId,
+            name: name,
+            email: email,
+            baseSalary: baseSal,
+            pulseRate: pulseRt,
+            commissionRate: commRt
+          };
+
+          appState.doctors.push(newDoctor);
+
+          if (supabaseClient && navigator.onLine) {
+            await supabaseClient.from('doctors').insert([{
+              id: newDoctor.id,
+              name: newDoctor.name,
+              email: newDoctor.email,
+              base_salary: newDoctor.baseSalary,
+              pulse_rate: newDoctor.pulseRate,
+              commission_rate: newDoctor.commissionRate
+            }]);
+          }
+        }
+
+        // 3. Insert into staff_profiles table using the Manager's authenticated client
+        if (supabaseClient && navigator.onLine) {
+          const { error: profileError } = await supabaseClient.from('staff_profiles').upsert({
+            id: newUserId,
+            email: email,
+            full_name: name,
+            role: role,
+            doctor_id: doctorId
+          });
+          if (profileError) console.warn("Staff profile notice:", profileError.message);
+        }
+
+        appState.staffProfiles.push({
+          id: newUserId,
+          email: email,
+          full_name: name,
+          role: role,
+          doctor_id: doctorId
+        });
+
+        persistLocal();
+        logAction('STAFF_ACCOUNT_CREATED', `Manager created ${role.toUpperCase()} account for ${name} (${email})`);
+        alert(`Account created successfully for ${name}!\n\nEmail: ${email}\nRole: ${role === 'owner' ? 'Owner / Manager' : 'Doctor'}\n\nThey can now sign in using their email and password.`);
+        closeModal('staff-modal');
+        renderAll();
+      } catch (err) {
+        alert("Account Creation Failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Staff User';
+      }
+    }
+
+    async function deleteStaffProfile(id) {
+      if (id === currentUser.id) {
+        alert("You cannot delete your own active manager account.");
+        return;
+      }
+      if (!confirm("Are you sure you want to revoke this staff member's clearance and remove their profile?")) return;
+
+      appState.staffProfiles = appState.staffProfiles.filter(s => s.id !== id);
+      persistLocal();
+      logAction('STAFF_DELETED', `Revoked staff access for ID: ${id}`);
+      renderStaff();
+
+      if (supabaseClient && navigator.onLine) {
+        await supabaseClient.from('staff_profiles').delete().eq('id', id);
+      }
+    }
+
+    /* ================= 8. WHATSAPP DIRECT CHAT AUTOMATION ================= */
     function sanitizePhoneNumber(rawPhone) {
       if (!rawPhone) return '';
       let cleaned = rawPhone.toString().replace(/\D/g, '');
@@ -1026,9 +1368,10 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       logAction('WHATSAPP_BOT', `Bot automated follow-up checked ${count} sessions`);
     }
 
-    /* ================= 8. RENDER ENGINE ================= */
+    /* ================= 9. RENDER ENGINE ================= */
     function renderAll() {
       renderDashboard();
+      renderStaff();
       renderCalendar();
       renderPatients();
       renderDoctors();
@@ -1039,6 +1382,32 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       renderDentalPatientDropdown();
       populateFormDropdowns();
       lucide.createIcons();
+    }
+
+    function renderStaff() {
+      const tbody = document.getElementById('staff-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = appState.staffProfiles.map(staff => {
+        const isOwner = staff.role === 'owner';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-800">${staff.full_name}</td>
+            <td class="p-3 font-mono text-xs">${staff.email}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${isOwner ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-indigo-100 text-indigo-800 border border-indigo-300'}">
+                ${isOwner ? 'Owner / Manager' : 'Doctor'}
+              </span>
+            </td>
+            <td class="p-3 font-mono text-xs text-slate-500">${staff.doctor_id || 'N/A'}</td>
+            <td class="p-3 text-right">
+              ${staff.id !== currentUser.id ? `
+                <button onclick="deleteStaffProfile('${staff.id}')" class="text-xs text-rose-600 hover:underline font-medium">Revoke Access</button>
+              ` : '<span class="text-xs text-slate-400 italic">Current User</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderDashboard() {
@@ -1271,7 +1640,7 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       `).join('');
     }
 
-    /* ================= 9. DENTAL & AESTHETIC CHART ================= */
+    /* ================= 10. DENTAL & AESTHETIC CHART ================= */
     function initDentalChart() {
       const upper = document.getElementById('upper-teeth');
       const lower = document.getElementById('lower-teeth');
@@ -1360,7 +1729,7 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       }
     }
 
-    /* ================= 10. FORM ACTIONS WITH SUPABASE CLOUD INSERTS / UPDATES / DELETES ================= */
+    /* ================= 11. MODAL FORMS & CRUD OPERATIONS ================= */
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -1416,11 +1785,8 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       };
 
       if (existingId) {
-        // UPDATE
         const idx = appState.patients.findIndex(p => p.id === existingId);
-        if (idx !== -1) {
-          appState.patients[idx] = { id: existingId, ...patData };
-        }
+        if (idx !== -1) appState.patients[idx] = { id: existingId, ...patData };
         logAction('PATIENT_UPDATED', `Updated patient ${patData.name}`);
         if (supabaseClient && navigator.onLine) {
           await supabaseClient.from('patients').update({
@@ -1432,7 +1798,6 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
           }).eq('id', existingId);
         }
       } else {
-        // CREATE
         const newId = 'pat-' + Date.now();
         const newPat = { id: newId, ...patData };
         appState.patients.push(newPat);
@@ -1923,7 +2288,7 @@ If you have any questions, feel free to reply directly to this chat. ✨`;
       alert(msg);
     }
 
-    /* ================= 11. BOOTSTRAP ================= */
+    /* ================= 12. BOOTSTRAP ================= */
     window.addEventListener('DOMContentLoaded', () => {
       initStore();
       initDentalChart();
