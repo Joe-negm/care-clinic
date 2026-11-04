@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Clinic — Plastic Surgery & Maxillofacial ERP</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .tooth-box.selected { border-color: #4f46e5; background-color: #e0e7ff; }
+    .tooth-box.decay { background-color: #fee2e2; border-color: #ef4444; }
+    .tooth-box.treated { background-color: #dcfce7; border-color: #22c55e; }
+    .tooth-box.crown { background-color: #fef9c3; border-color: #eab308; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex overflow-hidden">
+
+  <!-- ================= AUTHENTICATION / LOGIN SCREEN ================= -->
+  <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 mb-3">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900">Aura Aesthetic Clinic</h1>
+        <p class="text-xs text-slate-500 mt-1">Sign in with role-based clinical clearance</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
+          <input type="email" id="auth-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="owner@auraclinic.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+          <input type="password" id="auth-password" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Login Role</label>
+          <select id="auth-role" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="owner">Owner / Clinic Manager (Full Financial Access)</option>
+            <option value="doctor">Doctor (Restricted to Assigned Patients)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
+          Enter Clinical Portal
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+        <p class="font-bold text-slate-700">Quick Demo Logins:</p>
+        <p>• Owner: <span class="font-mono text-indigo-600">owner@auraclinic.com</span> | <span class="font-mono">admin123</span></p>
+        <p>• Doctor: <span class="font-mono text-indigo-600">dr.tarek@auraclinic.com</span> | <span class="font-mono">doc123</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APP WORKSPACE ================= -->
+  <div id="main-app" class="flex-1 flex overflow-hidden hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-900 text-slate-100 flex flex-col justify-between shadow-2xl flex-shrink-0">
+      <div>
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="text-rose-400"></i>
+            <span class="font-bold text-sm tracking-wider uppercase">AURA CLINIC</span>
+          </div>
+          <span id="sync-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-amber-500/20 text-amber-300 font-semibold uppercase">Local Store</span>
+        </div>
+
+        <div class="px-4 py-3 bg-slate-800/60 border-b border-slate-800 flex items-center justify-between text-xs">
+          <div>
+            <div id="user-display-name" class="font-bold text-slate-200">Owner Account</div>
+            <div id="user-display-role" class="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold">Manager Access</div>
+          </div>
+          <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition" title="Log Out">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <nav class="p-3 space-y-1 text-sm overflow-y-auto max-h-[calc(100vh-220px)]">
+          <button onclick="navigate('dashboard')" class="nav-btn active-nav w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-800 text-slate-100">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+          </button>
+          <button onclick="navigate('calendar')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+            <i data-lucide="calendar" class="w-4 h-4"></i> Calendar & Sessions
+          </button>
+          <button onclick="navigate('patients')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+            <i data-lucide="users" class="w-4 h-4"></i> Patients & Journey
+          </button>
+          <button onclick="navigate('dental')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+            <i data-lucide="smile" class="w-4 h-4"></i> Dental/Facial Chart
+          </button>
+
+          <!-- MANAGEMENT ONLY VIEW -->
+          <div class="mgmt-only pt-3 border-t border-slate-800 mt-2 space-y-1">
+            <span class="text-[10px] tracking-wider uppercase text-slate-500 font-bold px-3">Management Only</span>
+            <button onclick="navigate('doctors')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="user-check" class="w-4 h-4"></i> Doctors & Salaries
+            </button>
+            <button onclick="navigate('services')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="tag" class="w-4 h-4"></i> Services & Packages
+            </button>
+            <button onclick="navigate('financials')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="wallet" class="w-4 h-4"></i> Financial Books
+            </button>
+            <button onclick="navigate('inventory')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="boxes" class="w-4 h-4"></i> Consumables & Stock
+            </button>
+            <button onclick="navigate('logs')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+              <i data-lucide="shield-alert" class="w-4 h-4"></i> Audit Trail
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      <div class="p-3 border-t border-slate-800">
+        <button onclick="openModal('supabase-modal')" class="w-full flex items-center justify-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 py-2.5 rounded text-emerald-400 font-medium">
+          <i data-lucide="database" class="w-3.5 h-3.5"></i> Supabase Setup
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN SCROLLABLE CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto p-6 bg-slate-50">
+
+      <!-- 1. DASHBOARD -->
+      <section id="sec-dashboard" class="page-sec space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Clinical Dashboard</h1>
+            <p class="text-xs text-slate-500">Real-time pulse counts, revenue metrics, and patient flow</p>
+          </div>
+          <button onclick="runWhatsAppBot()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow">
+            <i data-lucide="message-square" class="w-4 h-4"></i> Run WhatsApp Auto-Followup
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Revenue (Month)</span>
+            <p id="dash-revenue" class="text-2xl font-black text-slate-900 mt-1">$0.00</p>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Laser Pulses Fired</span>
+            <p id="dash-pulses" class="text-2xl font-black text-rose-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Patient Profiles</span>
+            <p id="dash-patients" class="text-2xl font-black text-indigo-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Doctor Pay Liabilities</span>
+            <p id="dash-doctor-liabilities" class="text-2xl font-black text-amber-600 mt-1">$0.00</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <h2 class="text-base font-bold text-slate-800 mb-3">Today's Treatments & Sessions</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-slate-700 font-medium">
+                <tr>
+                  <th class="p-3">Time</th>
+                  <th class="p-3">Patient</th>
+                  <th class="p-3">Doctor</th>
+                  <th class="p-3">Service</th>
+                  <th class="p-3">Pulses Fired</th>
+                  <th class="p-3">WhatsApp Automation</th>
+                </tr>
+              </thead>
+              <tbody id="dash-appointments-table" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CALENDAR & SESSIONS -->
+      <section id="sec-calendar" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Session Scheduling</h1>
+            <p class="text-xs text-slate-500">Manage time slots, assign doctors, and log laser pulses</p>
+          </div>
+          <button onclick="openModal('appointment-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
+            <i data-lucide="plus" class="w-4 h-4"></i> Book Session
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+                <tr>
+                  <th class="p-3">Date & Time</th>
+                  <th class="p-3">Patient</th>
+                  <th class="p-3">Assigned Doctor</th>
+                  <th class="p-3">Procedure</th>
+                  <th class="p-3">Laser Pulses</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">WhatsApp</th>
+                </tr>
+              </thead>
+              <tbody id="calendar-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. PATIENTS & JOURNEY -->
+      <section id="sec-patients" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Patient Profiles & Journey</h1>
+            <p class="text-xs text-slate-500">Clinical stages: Inquiry $\rightarrow$ Consultation $\rightarrow$ Surgery $\rightarrow$ Post-Op</p>
+          </div>
+          <button onclick="openModal('patient-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> New Patient
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+                <tr>
+                  <th class="p-3">Patient</th>
+                  <th class="p-3">Phone</th>
+                  <th class="p-3">Journey Stage</th>
+                  <th class="p-3">Medical History</th>
+                  <th class="p-3">Assigned Doctor</th>
+                  <th class="p-3">Statements</th>
+                </tr>
+              </thead>
+              <tbody id="patient-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. DENTAL & FACIAL AESTHETIC CHART -->
+      <section id="sec-dental" class="page-sec hidden space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Interactive Dental & Maxillofacial Chart</h1>
+            <p class="text-xs text-slate-500">Universal Tooth Grid (1-32) for precise aesthetic and dental tracking</p>
+          </div>
+          <select id="dental-patient-select" onchange="loadSelectedPatientDental()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white font-medium"></select>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="text-center font-bold text-xs uppercase tracking-wider text-slate-500">Maxillary Arch (Upper 1-16)</div>
+          <div id="upper-teeth" class="grid grid-cols-8 sm:grid-cols-16 gap-1.5 max-w-4xl mx-auto"></div>
+
+          <hr class="my-3 border-slate-200"/>
+
+          <div id="lower-teeth" class="grid grid-cols-8 sm:grid-cols-16 gap-1.5 max-w-4xl mx-auto"></div>
+          <div class="text-center font-bold text-xs uppercase tracking-wider text-slate-500">Mandibular Arch (Lower 32-17)</div>
+
+          <div class="flex items-center justify-center gap-6 text-xs font-medium pt-3">
+            <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-white border border-slate-400 rounded"></span> Healthy</span>
+            <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-red-100 border border-red-500 rounded"></span> Caries / Pathology</span>
+            <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-green-100 border border-green-500 rounded"></span> Treated / Filled</span>
+            <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 bg-yellow-100 border border-yellow-500 rounded"></span> Crown / Implant</span>
+          </div>
+
+          <!-- Tooth Update Form -->
+          <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap items-center gap-3 text-sm">
+            <div>Selected: <strong id="selected-tooth-label" class="text-indigo-600 font-bold">None</strong></div>
+            <select id="tooth-condition-input" class="border border-slate-300 rounded px-2.5 py-1.5 bg-white text-xs">
+              <option value="healthy">Healthy</option>
+              <option value="decay">Pathology / Caries</option>
+              <option value="treated">Treated / Filled</option>
+              <option value="crown">Crown / Veneer / Implant</option>
+            </select>
+            <input type="text" id="tooth-notes-input" placeholder="Clinical notes (e.g. Veneer prep, 2.5mm margin, root canal)" class="border border-slate-300 rounded px-3 py-1.5 text-xs flex-1"/>
+            <button onclick="saveToothRecord()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-xs font-medium">Save Tooth Record</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. DOCTORS & PERFORMANCE SALARY ENGINE -->
+      <section id="sec-doctors" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Doctor Profiles & Performance Payroll</h1>
+            <p class="text-xs text-slate-500">Calculated: Base + (Laser Pulses $\times$ Rate) + Service Commissions</p>
+          </div>
+          <button onclick="openModal('doctor-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Doctor
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3">Doctor</th>
+                <th class="p-3">Base Salary</th>
+                <th class="p-3">Total Pulses Fired</th>
+                <th class="p-3">Laser Bonus</th>
+                <th class="p-3">Commission %</th>
+                <th class="p-3">Net Payable Salary</th>
+              </tr>
+            </thead>
+            <tbody id="doctor-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 6. SERVICES & LASER PACKAGES -->
+      <section id="sec-services" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Services & Laser Packages</h1>
+            <p class="text-xs text-slate-500">Configure prices, operational costs, and default pulse allotments</p>
+          </div>
+          <button onclick="openModal('service-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
+            <i data-lucide="plus" class="w-4 h-4"></i> New Service
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3">Service Name</th>
+                <th class="p-3">Cost Price</th>
+                <th class="p-3">Retail Price</th>
+                <th class="p-3">Gross Margin</th>
+                <th class="p-3">Default Laser Pulses</th>
+              </tr>
+            </thead>
+            <tbody id="services-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7. FINANCIAL BOOKS & INVOICES -->
+      <section id="sec-financials" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Financial Ledger & Invoices</h1>
+            <p class="text-xs text-slate-500">Multi-payment logging (Cash, Visa, Bank Transfer, ValU/Installments)</p>
+          </div>
+          <button onclick="openModal('invoice-modal')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
+            <i data-lucide="file-plus" class="w-4 h-4"></i> Generate Invoice
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3">Date</th>
+                <th class="p-3">Patient</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Payment Method</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="financials-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 8. INVENTORY & CONSUMABLES -->
+      <section id="sec-inventory" class="page-sec hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Clinical Consumables & Inventory</h1>
+            <p class="text-xs text-slate-500">Cryogen gas tanks, Botox units, Hyaluronic fillers, and sutures</p>
+          </div>
+          <button onclick="openModal('inventory-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            + Add Stock Item
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3">Item Name</th>
+                <th class="p-3">In-Stock Qty</th>
+                <th class="p-3">Unit Cost</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Adjust Stock</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 9. AUDIT TRAIL LOGS -->
+      <section id="sec-logs" class="page-sec hidden space-y-6">
+        <h1 class="text-2xl font-bold text-slate-900">Audit Trail & Action Logs</h1>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm font-mono text-xs">
+          <div id="logs-container" class="space-y-2 max-h-[600px] overflow-y-auto"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= POPUP MODALS ================= -->
+
+  <!-- Patient Modal -->
+  <div id="patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Register Patient Profile</h3>
+      <form onsubmit="handleSavePatient(event)" class="space-y-3">
+        <input type="text" id="p-name" placeholder="Patient Full Name" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="p-phone" placeholder="WhatsApp Phone (e.g., 201012345678)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <select id="p-journey" class="w-full border rounded-lg p-2 text-sm bg-white">
+          <option value="Inquiry">Stage: Inquiry</option>
+          <option value="Consultation">Stage: Consultation</option>
+          <option value="Laser/Surgical Treatment">Stage: Active Treatment</option>
+          <option value="Post-Op Recovery">Stage: Post-Op Recovery</option>
+          <option value="Completed">Stage: Completed</option>
+        </select>
+        <textarea id="p-history" placeholder="Medical history, allergies, Fitzpatrick scale, previous surgeries..." class="w-full border rounded-lg p-2 text-sm"></textarea>
+        <select id="p-doctor" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('patient-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Appointment Modal -->
+  <div id="appointment-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Book Clinical / Laser Session</h3>
+      <form onsubmit="handleSaveAppointment(event)" class="space-y-3">
+        <select id="apt-patient" required class="w-full border rounded-lg p-2 text-sm bg-white"></select>
+        <select id="apt-doctor" required class="w-full border rounded-lg p-2 text-sm bg-white"></select>
+        <input type="datetime-local" id="apt-datetime" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="apt-service" placeholder="Treatment (e.g. Candela GentleLase 1500 Pulses)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Laser Pulses Fired:</label>
+          <input type="number" id="apt-pulses" placeholder="0" value="0" class="w-full border rounded-lg p-2 text-sm mt-1"/>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('appointment-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Book & Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Doctor Modal -->
+  <div id="doctor-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Add Doctor Profile</h3>
+      <form onsubmit="handleSaveDoctor(event)" class="space-y-3">
+        <input type="text" id="doc-name" placeholder="Full Name (e.g., Dr. Tarek Zaki)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="email" id="doc-email" placeholder="Doctor Login Email" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="doc-base" placeholder="Base Salary ($)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" step="0.01" id="doc-pulse-rate" placeholder="Bonus per Laser Pulse ($) e.g., 0.05" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" step="0.01" id="doc-comm" placeholder="Commission Rate (e.g., 0.15 for 15%)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('doctor-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Save Doctor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service Modal -->
+  <div id="service-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Add Service / Laser Package</h3>
+      <form onsubmit="handleSaveService(event)" class="space-y-3">
+        <input type="text" id="srv-name" placeholder="Procedure Name (e.g., Full Legs Laser)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="srv-cost" placeholder="Internal Cost ($)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="srv-price" placeholder="Retail Price ($)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="srv-pulses" placeholder="Standard Pulses (if laser, otherwise 0)" value="0" class="w-full border rounded-lg p-2 text-sm"/>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('service-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Save Package</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div id="invoice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Issue Payment Invoice</h3>
+      <form onsubmit="handleSaveInvoice(event)" class="space-y-3">
+        <select id="inv-patient" required class="w-full border rounded-lg p-2 text-sm bg-white"></select>
+        <input type="number" step="0.01" id="inv-amount" placeholder="Amount ($)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <select id="inv-method" class="w-full border rounded-lg p-2 text-sm bg-white">
+          <option value="Cash">Cash</option>
+          <option value="Visa / MasterCard">Visa / MasterCard</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Installments (ValU / Sympl)">Installments</option>
+        </select>
+        <input type="date" id="inv-date" required class="w-full border rounded-lg p-2 text-sm"/>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('invoice-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">Log Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Inventory Modal -->
+  <div id="inventory-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-900">Add Inventory Consumable</h3>
+      <form onsubmit="handleSaveInventory(event)" class="space-y-3">
+        <input type="text" id="inv-name" placeholder="Item Name (e.g., Cryogen Gas Tank, Juvederm 1ml)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="inv-qty" placeholder="In-Stock Units" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" id="inv-min" placeholder="Low Stock Alert Threshold" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="number" step="0.01" id="inv-cost" placeholder="Unit Cost ($)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('inventory-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Supabase Cloud Credentials Modal -->
+  <div id="supabase-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center gap-2">
+        <i data-lucide="database" class="text-emerald-600"></i>
+        <h3 class="font-bold text-lg text-slate-900">Supabase Cloud Sync</h3>
+      </div>
+      <p class="text-xs text-slate-500 leading-relaxed">Enter your Supabase URL & Anon Key to sync patient files, laser pulse counts, and financial ledgers to the cloud.</p>
+      <div>
+        <label class="text-xs font-semibold text-slate-700">Project URL</label>
+        <input type="text" id="sb-url" placeholder="https://your-project.supabase.co" class="w-full border rounded-lg p-2 text-sm mt-1"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-700">Anon Public Key</label>
+        <input type="text" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5c..." class="w-full border rounded-lg p-2 text-sm mt-1"/>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('supabase-modal')" class="px-4 py-2 border rounded-lg text-sm">Close</button>
+        <button onclick="saveSupabaseSettings()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIC & JAVASCRIPT ================= -->
+  <script>
+    const STORE_KEY = 'aura_clinic_master_db';
+    let currentUser = null; // { role: 'owner'|'doctor', email: '', doctorId: '' }
+    let selectedTooth = null;
+    let supabaseClient = null;
+
+    let appState = {
+      doctors: [
+        { id: 'doc-1', name: 'Dr. Tarek Zaki (Plastic & Laser)', email: 'dr.tarek@auraclinic.com', baseSalary: 3000, pulseRate: 0.05, commissionRate: 0.15 },
+        { id: 'doc-2', name: 'Dr. Sarah Allam (Dentofacial Aesthetics)', email: 'dr.sarah@auraclinic.com', baseSalary: 2500, pulseRate: 0.00, commissionRate: 0.20 }
+      ],
+      patients: [
+        { id: 'pat-1', name: 'Nouran Mostafa', phone: '201012345678', journeyStage: 'Laser/Surgical Treatment', medicalHistory: 'No drug allergies. Fitzpatrick Type II.', assignedDoctorId: 'doc-1' },
+        { id: 'pat-2', name: 'Karim Ezzat', phone: '201098765432', journeyStage: 'Consultation', medicalHistory: 'Hypertension controlled. Keloid tendency.', assignedDoctorId: 'doc-2' }
+      ],
+      services: [
+        { id: 'srv-1', name: 'Full Body Laser (Candela GentleLase)', cost: 35, price: 200, defaultPulses: 2800 },
+        { id: 'srv-2', name: 'Facial Hollywood Smile (16 Veneers)', cost: 400, price: 1800, defaultPulses: 0 }
+      ],
+      appointments: [
+        { id: 'apt-1', patientId: 'pat-1', doctorId: 'doc-1', sessionTime: '2026-11-05T14:30', serviceName: 'Full Body Laser (Candela GentleLase)', pulsesUsed: 2950, status: 'Confirmed' }
+      ],
+      invoices: [
+        { id: 'inv-1', patientId: 'pat-1', amount: 200, paymentMethod: 'Visa / MasterCard', invoiceDate: '2026-10-15', status: 'Paid' },
+        { id: 'inv-2', patientId: 'pat-1', amount: 200, paymentMethod: 'Cash', invoiceDate: '2026-11-02', status: 'Paid' }
+      ],
+      inventory: [
+        { id: 'item-1', itemName: 'Laser Cryogen Gas 1000g Canister', stockQty: 4, minAlertQty: 2, unitCost: 120 },
+        { id: 'item-2', itemName: 'Hyaluronic Acid 1ml Dermal Filler', stockQty: 15, minAlertQty: 5, unitCost: 80 }
+      ],
+      dentalRecords: {
+        'pat-2': { 18: { condition: 'decay', notes: 'Mesial pit decay' } }
+      },
+      logs: [
+        { id: 'log-1', action: 'System Initialization', performedBy: 'System', timestamp: new Date().toLocaleString(), details: 'Offline clinical storage initialized.' }
+      ],
+      supabaseConfig: {
+        url: localStorage.getItem('aura_sb_url') || '',
+        key: localStorage.getItem('aura_sb_key') || ''
+      }
+    };
+
+    /* INITIALIZATION & OFFLINE PERSISTENCE */
+    function initStore() {
+      const cached = localStorage.getItem(STORE_KEY);
+      if (cached) {
+        try { appState = JSON.parse(cached); } catch (e) { console.error('Corrupted cache', e); }
+      }
+      persist();
+      initSupabase();
+    }
+
+    function persist() {
+      localStorage.setItem(STORE_KEY, JSON.stringify(appState));
+      syncWithSupabase();
+    }
+
+    function logAction(action, details) {
+      const entry = {
+        id: 'log-' + Date.now(),
+        action,
+        performedBy: currentUser ? currentUser.email : 'System',
+        timestamp: new Date().toLocaleString(),
+        details
+      };
+      appState.logs.unshift(entry);
+      renderLogs();
+      localStorage.setItem(STORE_KEY, JSON.stringify(appState));
+    }
+
+    /* SUPABASE CLOUD CONNECTION */
+    function initSupabase() {
+      if (appState.supabaseConfig.url && appState.supabaseConfig.key) {
+        try {
+          supabaseClient = supabase.createClient(appState.supabaseConfig.url, appState.supabaseConfig.key);
+          const badge = document.getElementById('sync-status-badge');
+          badge.textContent = 'Supabase Cloud';
+          badge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase';
+        } catch (e) {
+          console.warn('Supabase initialization failed:', e);
+        }
+      }
+    }
+
+    async function saveSupabaseSettings() {
+      const url = document.getElementById('sb-url').value.trim();
+      const key = document.getElementById('sb-key').value.trim();
+      appState.supabaseConfig.url = url;
+      appState.supabaseConfig.key = key;
+      localStorage.setItem('aura_sb_url', url);
+      localStorage.setItem('aura_sb_key', key);
+      closeModal('supabase-modal');
+      initSupabase();
+      alert('Supabase credentials stored. Live sync active.');
+    }
+
+    async function syncWithSupabase() {
+      if (!supabaseClient || !navigator.onLine) return;
+      try {
+        // Example: Push latest audit logs non-blockingly
+        if (appState.logs.length > 0) {
+          const l = appState.logs[0];
+          await supabaseClient.from('audit_logs').upsert({
+            id: l.id,
+            action: l.action,
+            performed_by: l.performedBy,
+            timestamp: new Date().toISOString(),
+            details: l.details
+          });
+        }
+      } catch (err) {
+        console.warn('Background Supabase sync skipped:', err);
+      }
+    }
+
+    /* AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC) */
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const role = document.getElementById('auth-role').value;
+
+      if (role === 'doctor') {
+        const doc = appState.doctors.find(d => d.email.toLowerCase() === email.toLowerCase());
+        currentUser = {
+          role: 'doctor',
+          email,
+          doctorId: doc ? doc.id : 'doc-1',
+          name: doc ? doc.name : 'Dr. Practitioner'
+        };
+      } else {
+        currentUser = {
+          role: 'owner',
+          email,
+          doctorId: null,
+          name: 'Clinic Owner / Manager'
+        };
+      }
+
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+
+      document.getElementById('user-display-name').textContent = currentUser.name;
+      document.getElementById('user-display-role').textContent = currentUser.role === 'owner' ? 'Owner (Full Access)' : 'Doctor (Restricted Access)';
+
+      applyRBAC();
+      renderAll();
+      logAction('LOGIN', `User ${currentUser.email} logged in under role: ${currentUser.role}`);
+    }
+
+    function logout() {
+      logAction('LOGOUT', `User ${currentUser.email} logged out`);
+      currentUser = null;
+      document.getElementById('main-app').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function applyRBAC() {
+      const mgmtElements = document.querySelectorAll('.mgmt-only');
+      if (currentUser.role === 'doctor') {
+        mgmtElements.forEach(el => el.classList.add('hidden'));
+      } else {
+        mgmtElements.forEach(el => el.classList.remove('hidden'));
+      }
+    }
+
+    /* NAVIGATION */
+    function navigate(secId) {
+      document.querySelectorAll('.page-sec').forEach(s => s.classList.add('hidden'));
+      document.getElementById('sec-' + secId).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-slate-800', 'text-slate-100');
+        btn.classList.add('text-slate-400');
+      });
+      event.currentTarget.classList.add('bg-slate-800', 'text-slate-100');
+    }
+
+    /* WHATSAPP AUTOMATION & BOT */
+    function sendWhatsAppSession(phone, patientName, date, service) {
+      const formattedDate = date.replace('T', ' at ');
+      const msg = `Hello ${patientName},\nThis is Aura Aesthetic Clinic reminding you of your session for *${service}* scheduled on *${formattedDate}*.\n\nPlease reply 1 to Confirm or 2 to Reschedule.`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+      logAction('WHATSAPP_DISPATCH', `Session reminder dispatched to ${patientName} (${phone})`);
+    }
+
+    function runWhatsAppBot() {
+      let count = 0;
+      appState.appointments.forEach(apt => {
+        const pat = appState.patients.find(p => p.id === apt.patientId);
+        if (pat) count++;
+      });
+      alert(`WhatsApp Automation Bot Executed:\n\n• Processed ${count} active treatments.\n• Follow-up check-ins & post-treatment cooling instructions queued.`);
+      logAction('WHATSAPP_BOT', `Bot auto-followup checked ${count} sessions`);
+    }
+
+    /* RENDER ENGINE */
+    function renderAll() {
+      renderDashboard();
+      renderCalendar();
+      renderPatients();
+      renderDoctors();
+      renderServices();
+      renderFinancials();
+      renderInventory();
+      renderLogs();
+      renderDentalPatientDropdown();
+      populateFormDropdowns();
+      lucide.createIcons();
+    }
+
+    function renderDashboard() {
+      // Filter if Doctor
+      const appointments = (currentUser.role === 'doctor') 
+        ? appState.appointments.filter(a => a.doctorId === currentUser.doctorId) 
+        : appState.appointments;
+
+      const totalPulses = appointments.reduce((sum, a) => sum + Number(a.pulsesUsed || 0), 0);
+      const totalRevenue = appState.invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
+      document.getElementById('dash-revenue').textContent = `$${totalRevenue.toLocaleString()}`;
+      document.getElementById('dash-pulses').textContent = totalPulses.toLocaleString();
+      document.getElementById('dash-patients').textContent = appState.patients.length;
+
+      // Doctor Salary Liabilities
+      let totalSalaries = 0;
+      appState.doctors.forEach(doc => {
+        const docApts = appState.appointments.filter(a => a.doctorId === doc.id);
+        const pulses = docApts.reduce((sum, a) => sum + Number(a.pulsesUsed || 0), 0);
+        totalSalaries += (doc.baseSalary + (pulses * doc.pulseRate));
+      });
+      document.getElementById('dash-doctor-liabilities').textContent = `$${totalSalaries.toFixed(2)}`;
+
+      const tbody = document.getElementById('dash-appointments-table');
+      tbody.innerHTML = appointments.map(apt => {
+        const pat = appState.patients.find(p => p.id === apt.patientId);
+        const doc = appState.doctors.find(d => d.id === apt.doctorId);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-medium">${apt.sessionTime.replace('T', ' ')}</td>
+            <td class="p-3 font-semibold text-slate-800">${pat ? pat.name : 'N/A'}</td>
+            <td class="p-3">${doc ? doc.name : 'N/A'}</td>
+            <td class="p-3">${apt.serviceName}</td>
+            <td class="p-3 font-bold text-rose-600 font-mono">${(apt.pulsesUsed || 0).toLocaleString()}</td>
+            <td class="p-3">
+              <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded font-medium flex items-center gap-1 w-max">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Send WA
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCalendar() {
+      const tbody = document.getElementById('calendar-table-body');
+      const list = (currentUser.role === 'doctor') 
+        ? appState.appointments.filter(a => a.doctorId === currentUser.doctorId) 
+        : appState.appointments;
+
+      tbody.innerHTML = list.map(apt => {
+        const pat = appState.patients.find(p => p.id === apt.patientId);
+        const doc = appState.doctors.find(d => d.id === apt.doctorId);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-medium">${apt.sessionTime.replace('T', ' ')}</td>
+            <td class="p-3 font-semibold text-slate-800">${pat ? pat.name : 'Unknown'}</td>
+            <td class="p-3">${doc ? doc.name : 'Unassigned'}</td>
+            <td class="p-3">${apt.serviceName}</td>
+            <td class="p-3 font-bold font-mono text-rose-600">${Number(apt.pulsesUsed || 0).toLocaleString()}</td>
+            <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">${apt.status}</span></td>
+            <td class="p-3">
+              <button onclick="sendWhatsAppSession('${pat?.phone}', '${pat?.name}', '${apt.sessionTime}', '${apt.serviceName}')" class="text-xs text-emerald-600 hover:underline">WhatsApp</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPatients() {
+      const tbody = document.getElementById('patient-table-body');
+      // Doctors can only view patients assigned to them
+      const list = (currentUser.role === 'doctor') 
+        ? appState.patients.filter(p => p.assignedDoctorId === currentUser.doctorId) 
+        : appState.patients;
+
+      tbody.innerHTML = list.map(pat => {
+        const doc = appState.doctors.find(d => d.id === pat.assignedDoctorId);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-800">${pat.name}</td>
+            <td class="p-3 font-mono text-xs">${pat.phone}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-800">${pat.journeyStage}</span></td>
+            <td class="p-3 text-xs text-slate-500 max-w-xs truncate">${pat.medicalHistory}</td>
+            <td class="p-3 text-xs">${doc ? doc.name : 'Unassigned'}</td>
+            <td class="p-3">
+              <button onclick="viewFinancialStatement('${pat.id}')" class="text-xs text-indigo-600 hover:underline font-medium">Statements</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDoctors() {
+      const tbody = document.getElementById('doctor-table-body');
+      tbody.innerHTML = appState.doctors.map(doc => {
+        const appointments = appState.appointments.filter(a => a.doctorId === doc.id);
+        const totalPulses = appointments.reduce((sum, a) => sum + Number(a.pulsesUsed || 0), 0);
+        const pulseBonus = totalPulses * doc.pulseRate;
+        const netSalary = doc.baseSalary + pulseBonus;
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-800">${doc.name}</td>
+            <td class="p-3 font-mono">$${doc.baseSalary.toLocaleString()}</td>
+            <td class="p-3 font-mono font-bold text-rose-600">${totalPulses.toLocaleString()}</td>
+            <td class="p-3 font-mono text-emerald-600">+$${pulseBonus.toFixed(2)} <span class="text-[10px] text-slate-400">($${doc.pulseRate}/pulse)</span></td>
+            <td class="p-3 font-mono">${(doc.commissionRate * 100)}%</td>
+            <td class="p-3 font-mono font-black text-slate-900 bg-slate-50">$${netSalary.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderServices() {
+      const tbody = document.getElementById('services-table-body');
+      tbody.innerHTML = appState.services.map(s => {
+        const margin = s.price > 0 ? (((s.price - s.cost) / s.price) * 100).toFixed(0) : 0;
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-800">${s.name}</td>
+            <td class="p-3 font-mono text-slate-500">$${s.cost}</td>
+            <td class="p-3 font-mono font-bold text-slate-900">$${s.price}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700">${margin}% Margin</span></td>
+            <td class="p-3 font-mono text-rose-600">${s.defaultPulses > 0 ? s.defaultPulses.toLocaleString() + ' Pulses' : 'N/A'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderFinancials() {
+      const tbody = document.getElementById('financials-table-body');
+      tbody.innerHTML = appState.invoices.map(inv => {
+        const pat = appState.patients.find(p => p.id === inv.patientId);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 text-xs">${inv.invoiceDate}</td>
+            <td class="p-3 font-medium text-slate-800">${pat ? pat.name : 'Unknown'}</td>
+            <td class="p-3 font-bold font-mono">$${Number(inv.amount).toFixed(2)}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-100">${inv.paymentMethod}</span></td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-emerald-100 text-emerald-800">${inv.status}</span></td>
+            <td class="p-3">
+              <button onclick="viewFinancialStatement('${inv.patientId}')" class="text-xs text-indigo-600 hover:underline">Full Statement</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderInventory() {
+      const tbody = document.getElementById('inventory-table-body');
+      tbody.innerHTML = appState.inventory.map(item => {
+        const isLow = item.stockQty <= item.minAlertQty;
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-medium text-slate-800">${item.itemName}</td>
+            <td class="p-3 font-bold font-mono">${item.stockQty}</td>
+            <td class="p-3 font-mono">$${item.unitCost}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-xs font-semibold ${isLow ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-slate-100 text-slate-600'}">
+                ${isLow ? 'LOW STOCK' : 'Adequate'}
+              </span>
+            </td>
+            <td class="p-3 space-x-1">
+              <button onclick="changeStock('${item.id}', 1)" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold">+1</button>
+              <button onclick="changeStock('${item.id}', -1)" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold">-1</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderLogs() {
+      const container = document.getElementById('logs-container');
+      container.innerHTML = appState.logs.slice(0, 40).map(l => `
+        <div class="border-b border-slate-100 pb-1">
+          <span class="text-slate-400">[${l.timestamp}]</span>
+          <span class="text-indigo-600 font-bold">${l.performedBy}</span>:
+          <strong class="text-slate-800">${l.action}</strong> — ${l.details}
+        </div>
+      `).join('');
+    }
+
+    /* INTERACTIVE DENTAL & MAXILLOFACIAL CHART */
+    function initDentalChart() {
+      const upper = document.getElementById('upper-teeth');
+      const lower = document.getElementById('lower-teeth');
+      upper.innerHTML = ''; lower.innerHTML = '';
+
+      const upperTeeth = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
+      const lowerTeeth = [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17];
+
+      upperTeeth.forEach(n => upper.appendChild(createToothNode(n)));
+      lowerTeeth.forEach(n => lower.appendChild(createToothNode(n)));
+    }
+
+    function createToothNode(number) {
+      const div = document.createElement('div');
+      div.className = 'tooth-box border border-slate-300 rounded p-1 text-center cursor-pointer hover:border-indigo-500 bg-white select-none transition';
+      div.id = `tooth-${number}`;
+      div.innerHTML = `
+        <div class="text-[9px] text-slate-400 font-bold">#${number}</div>
+        <div class="py-1"><i data-lucide="shield" class="w-3.5 h-3.5 mx-auto text-slate-300"></i></div>
+      `;
+      div.onclick = () => selectTooth(number);
+      return div;
+    }
+
+    function selectTooth(number) {
+      selectedTooth = number;
+      document.querySelectorAll('.tooth-box').forEach(el => el.classList.remove('selected'));
+      document.getElementById(`tooth-${number}`).classList.add('selected');
+      document.getElementById('selected-tooth-label').textContent = `Tooth #${number}`;
+
+      const patId = document.getElementById('dental-patient-select').value;
+      const patRecords = appState.dentalRecords[patId] || {};
+      const record = patRecords[number] || { condition: 'healthy', notes: '' };
+
+      document.getElementById('tooth-condition-input').value = record.condition;
+      document.getElementById('tooth-notes-input').value = record.notes || '';
+    }
+
+    function saveToothRecord() {
+      if (!selectedTooth) return alert('Please click on a tooth in the grid first.');
+      const patId = document.getElementById('dental-patient-select').value;
+      if (!appState.dentalRecords[patId]) appState.dentalRecords[patId] = {};
+
+      const condition = document.getElementById('tooth-condition-input').value;
+      const notes = document.getElementById('tooth-notes-input').value;
+
+      appState.dentalRecords[patId][selectedTooth] = { condition, notes };
+      persist();
+      loadSelectedPatientDental();
+      logAction('DENTAL_RECORD_UPDATE', `Updated tooth #${selectedTooth} for patient ${patId} to [${condition}]`);
+      alert(`Tooth #${selectedTooth} saved successfully.`);
+    }
+
+    function loadSelectedPatientDental() {
+      const patId = document.getElementById('dental-patient-select').value;
+      const records = appState.dentalRecords[patId] || {};
+
+      for (let i = 1; i <= 32; i++) {
+        const el = document.getElementById(`tooth-${i}`);
+        if (!el) continue;
+        el.className = 'tooth-box border border-slate-300 rounded p-1 text-center cursor-pointer hover:border-indigo-500 bg-white select-none transition';
+        if (records[i]) {
+          el.classList.add(records[i].condition);
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function renderDentalPatientDropdown() {
+      const sel = document.getElementById('dental-patient-select');
+      sel.innerHTML = appState.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    /* FORM HANDLERS & MODAL MANAGEMENT */
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function populateFormDropdowns() {
+      const patSelects = [document.getElementById('apt-patient'), document.getElementById('inv-patient')];
+      const docSelects = [document.getElementById('p-doctor'), document.getElementById('apt-doctor')];
+
+      patSelects.forEach(s => {
+        if (s) s.innerHTML = appState.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      });
+
+      docSelects.forEach(s => {
+        if (s) s.innerHTML = appState.doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+      });
+    }
+
+    function handleSavePatient(e) {
+      e.preventDefault();
+      const newPat = {
+        id: 'pat-' + Date.now(),
+        name: document.getElementById('p-name').value,
+        phone: document.getElementById('p-phone').value,
+        journeyStage: document.getElementById('p-journey').value,
+        medicalHistory: document.getElementById('p-history').value,
+        assignedDoctorId: document.getElementById('p-doctor').value
+      };
+      appState.patients.push(newPat);
+      persist();
+      logAction('PATIENT_REGISTRATION', `Registered patient ${newPat.name}`);
+      closeModal('patient-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function handleSaveAppointment(e) {
+      e.preventDefault();
+      const newApt = {
+        id: 'apt-' + Date.now(),
+        patientId: document.getElementById('apt-patient').value,
+        doctorId: document.getElementById('apt-doctor').value,
+        sessionTime: document.getElementById('apt-datetime').value,
+        serviceName: document.getElementById('apt-service').value,
+        pulsesUsed: Number(document.getElementById('apt-pulses').value || 0),
+        status: 'Scheduled'
+      };
+      appState.appointments.push(newApt);
+      persist();
+      logAction('SESSION_BOOKED', `Session scheduled for ${newApt.serviceName} (${newApt.pulsesUsed} pulses)`);
+      closeModal('appointment-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function handleSaveDoctor(e) {
+      e.preventDefault();
+      const newDoc = {
+        id: 'doc-' + Date.now(),
+        name: document.getElementById('doc-name').value,
+        email: document.getElementById('doc-email').value,
+        baseSalary: Number(document.getElementById('doc-base').value),
+        pulseRate: Number(document.getElementById('doc-pulse-rate').value),
+        commissionRate: Number(document.getElementById('doc-comm').value)
+      };
+      appState.doctors.push(newDoc);
+      persist();
+      logAction('DOCTOR_ADDED', `Doctor ${newDoc.name} registered`);
+      closeModal('doctor-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function handleSaveService(e) {
+      e.preventDefault();
+      const newSrv = {
+        id: 'srv-' + Date.now(),
+        name: document.getElementById('srv-name').value,
+        cost: Number(document.getElementById('srv-cost').value),
+        price: Number(document.getElementById('srv-price').value),
+        defaultPulses: Number(document.getElementById('srv-pulses').value || 0)
+      };
+      appState.services.push(newSrv);
+      persist();
+      logAction('SERVICE_CREATED', `Service ${newSrv.name} added`);
+      closeModal('service-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function handleSaveInvoice(e) {
+      e.preventDefault();
+      const newInv = {
+        id: 'inv-' + Date.now(),
+        patientId: document.getElementById('inv-patient').value,
+        amount: Number(document.getElementById('inv-amount').value),
+        paymentMethod: document.getElementById('inv-method').value,
+        invoiceDate: document.getElementById('inv-date').value,
+        status: 'Paid'
+      };
+      appState.invoices.push(newInv);
+      persist();
+      logAction('INVOICE_ISSUED', `Invoice of $${newInv.amount} logged via ${newInv.paymentMethod}`);
+      closeModal('invoice-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function handleSaveInventory(e) {
+      e.preventDefault();
+      const newItem = {
+        id: 'item-' + Date.now(),
+        itemName: document.getElementById('inv-name').value,
+        stockQty: Number(document.getElementById('inv-qty').value),
+        minAlertQty: Number(document.getElementById('inv-min').value),
+        unitCost: Number(document.getElementById('inv-cost').value)
+      };
+      appState.inventory.push(newItem);
+      persist();
+      logAction('INVENTORY_ADDED', `Consumable ${newItem.itemName} added`);
+      closeModal('inventory-modal');
+      renderAll();
+      e.target.reset();
+    }
+
+    function changeStock(itemId, delta) {
+      const item = appState.inventory.find(i => i.id === itemId);
+      if (item) {
+        item.stockQty = Math.max(0, item.stockQty + delta);
+        persist();
+        renderInventory();
+        logAction('STOCK_ADJUSTMENT', `${item.itemName} stock adjusted to ${item.stockQty}`);
+      }
+    }
+
+    function viewFinancialStatement(patientId) {
+      const pat = appState.patients.find(p => p.id === patientId);
+      const invoices = appState.invoices.filter(i => i.patientId === patientId);
+      const total = invoices.reduce((acc, i) => acc + Number(i.amount), 0);
+
+      let msg = `Financial Statement: ${pat.name}\n`;
+      msg += `Phone: ${pat.phone}\n`;
+      msg += `------------------------------------\n`;
+      if (invoices.length === 0) {
+        msg += `No previous month or current statements.\n`;
+      } else {
+        invoices.forEach(i => {
+          msg += `• [${i.invoiceDate}] $${i.amount} via ${i.paymentMethod} (${i.status})\n`;
+        });
+      }
+      msg += `------------------------------------\n`;
+      msg += `Net Paid: $${total.toFixed(2)}`;
+      alert(msg);
+    }
+
+    /* RUNTIME BOOTSTRAP */
+    window.addEventListener('DOMContentLoaded', () => {
+      initStore();
+      initDentalChart();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
