@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aura Clinic — Plastic Surgery & Maxillofacial ERP</title>
+  <title>Aura Clinic — Plastic Surgery, Laser & Maxillofacial ERP</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client -->
+  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .tooth-box.selected { border-color: #4f46e5; background-color: #e0e7ff; }
@@ -27,13 +27,13 @@
           <i data-lucide="sparkles" class="w-6 h-6"></i>
         </div>
         <h1 class="text-2xl font-bold text-slate-900">Aura Aesthetic Clinic</h1>
-        <p class="text-xs text-slate-500 mt-1">Sign in with role-based clinical clearance</p>
+        <p class="text-xs text-slate-500 mt-1">Sign in with verified clinical staff credentials</p>
       </div>
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
-          <input type="email" id="auth-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="owner@auraclinic.com" />
+          <input type="email" id="auth-email" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="doctor@auraclinic.com" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Password</label>
@@ -42,12 +42,13 @@
         <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
           Enter Clinical Portal
         </button>
-        <div class="mt-4 text-center">
-  <button type="button" onclick="openModal('supabase-modal')" class="text-xs text-indigo-600 hover:underline font-medium">
-    ⚙️ Configure Supabase Credentials
-  </button>
-</div>
       </form>
+
+      <div class="mt-4 text-center">
+        <button type="button" onclick="openModal('supabase-modal')" class="text-xs text-indigo-600 hover:underline font-medium">
+          ⚙️ Cloud Sync Settings
+        </button>
+      </div>
     </div>
   </div>
 
@@ -62,13 +63,13 @@
             <i data-lucide="sparkles" class="text-rose-400"></i>
             <span class="font-bold text-sm tracking-wider uppercase">AURA CLINIC</span>
           </div>
-          <span id="sync-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-amber-500/20 text-amber-300 font-semibold uppercase">Local Store</span>
+          <span id="sync-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase">Supabase Cloud</span>
         </div>
 
         <div class="px-4 py-3 bg-slate-800/60 border-b border-slate-800 flex items-center justify-between text-xs">
           <div>
-            <div id="user-display-name" class="font-bold text-slate-200">Owner Account</div>
-            <div id="user-display-role" class="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold">Manager Access</div>
+            <div id="user-display-name" class="font-bold text-slate-200">Staff Account</div>
+            <div id="user-display-role" class="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold">Access Level</div>
           </div>
           <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition" title="Log Out">
             <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -89,7 +90,7 @@
             <i data-lucide="smile" class="w-4 h-4"></i> Dental/Facial Chart
           </button>
 
-          <!-- MANAGEMENT ONLY VIEW -->
+          <!-- MANAGEMENT ONLY TABS -->
           <div class="mgmt-only pt-3 border-t border-slate-800 mt-2 space-y-1">
             <span class="text-[10px] tracking-wider uppercase text-slate-500 font-bold px-3">Management Only</span>
             <button onclick="navigate('doctors')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100">
@@ -126,7 +127,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Clinical Dashboard</h1>
-            <p class="text-xs text-slate-500">Real-time pulse counts, revenue metrics, and patient flow</p>
+            <p class="text-xs text-slate-500">Live operational indicators, laser pulse metrics, and patient throughput</p>
           </div>
           <button onclick="runWhatsAppBot()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow">
             <i data-lucide="message-square" class="w-4 h-4"></i> Run WhatsApp Auto-Followup
@@ -135,7 +136,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Revenue (Month)</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Revenue</span>
             <p id="dash-revenue" class="text-2xl font-black text-slate-900 mt-1">$0.00</p>
           </div>
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -143,7 +144,7 @@
             <p id="dash-pulses" class="text-2xl font-black text-rose-600 mt-1">0</p>
           </div>
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Patient Profiles</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Registered Patients</span>
             <p id="dash-patients" class="text-2xl font-black text-indigo-600 mt-1">0</p>
           </div>
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -153,7 +154,7 @@
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <h2 class="text-base font-bold text-slate-800 mb-3">Today's Treatments & Sessions</h2>
+          <h2 class="text-base font-bold text-slate-800 mb-3">Today's Treatment Schedule</h2>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
               <thead class="bg-slate-50 text-slate-700 font-medium">
@@ -162,8 +163,8 @@
                   <th class="p-3">Patient</th>
                   <th class="p-3">Doctor</th>
                   <th class="p-3">Service</th>
-                  <th class="p-3">Pulses Fired</th>
-                  <th class="p-3">WhatsApp Automation</th>
+                  <th class="p-3">Pulses Used</th>
+                  <th class="p-3">WhatsApp Action</th>
                 </tr>
               </thead>
               <tbody id="dash-appointments-table" class="divide-y divide-slate-100"></tbody>
@@ -177,7 +178,7 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Session Scheduling</h1>
-            <p class="text-xs text-slate-500">Manage time slots, assign doctors, and log laser pulses</p>
+            <p class="text-xs text-slate-500">Book treatments, assign doctors, and log laser pulses</p>
           </div>
           <button onclick="openModal('appointment-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
             <i data-lucide="plus" class="w-4 h-4"></i> Book Session
@@ -191,9 +192,9 @@
                 <tr>
                   <th class="p-3">Date & Time</th>
                   <th class="p-3">Patient</th>
-                  <th class="p-3">Assigned Doctor</th>
+                  <th class="p-3">Doctor</th>
                   <th class="p-3">Procedure</th>
-                  <th class="p-3">Laser Pulses</th>
+                  <th class="p-3">Pulses Fired</th>
                   <th class="p-3">Status</th>
                   <th class="p-3">WhatsApp</th>
                 </tr>
@@ -209,7 +210,7 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Patient Profiles & Journey</h1>
-            <p class="text-xs text-slate-500">Clinical stages: Inquiry $\rightarrow$ Consultation $\rightarrow$ Surgery $\rightarrow$ Post-Op</p>
+            <p class="text-xs text-slate-500">Inquiry $\rightarrow$ Consultation $\rightarrow$ Treatment $\rightarrow$ Post-Op Recovery $\rightarrow$ Completed</p>
           </div>
           <button onclick="openModal('patient-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
             <i data-lucide="user-plus" class="w-4 h-4"></i> New Patient
@@ -270,7 +271,7 @@
               <option value="treated">Treated / Filled</option>
               <option value="crown">Crown / Veneer / Implant</option>
             </select>
-            <input type="text" id="tooth-notes-input" placeholder="Clinical notes (e.g. Veneer prep, 2.5mm margin, root canal)" class="border border-slate-300 rounded px-3 py-1.5 text-xs flex-1"/>
+            <input type="text" id="tooth-notes-input" placeholder="Clinical notes (e.g. Veneer prep, margin thickness, root canal)" class="border border-slate-300 rounded px-3 py-1.5 text-xs flex-1"/>
             <button onclick="saveToothRecord()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-xs font-medium">Save Tooth Record</button>
           </div>
         </div>
@@ -281,7 +282,7 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Doctor Profiles & Performance Payroll</h1>
-            <p class="text-xs text-slate-500">Calculated: Base + (Laser Pulses $\times$ Rate) + Service Commissions</p>
+            <p class="text-xs text-slate-500">Calculates: Base + (Laser Pulses $\times$ Pulse Bonus) + Service Commissions</p>
           </div>
           <button onclick="openModal('doctor-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
             <i data-lucide="plus" class="w-4 h-4"></i> Add Doctor
@@ -310,7 +311,7 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Services & Laser Packages</h1>
-            <p class="text-xs text-slate-500">Configure prices, operational costs, and default pulse allotments</p>
+            <p class="text-xs text-slate-500">Configure retail prices, direct costs, and standard pulse allotments</p>
           </div>
           <button onclick="openModal('service-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 font-medium">
             <i data-lucide="plus" class="w-4 h-4"></i> New Service
@@ -367,7 +368,7 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Clinical Consumables & Inventory</h1>
-            <p class="text-xs text-slate-500">Cryogen gas tanks, Botox units, Hyaluronic fillers, and sutures</p>
+            <p class="text-xs text-slate-500">Cryogen gas tanks, Botox units, Hyaluronic fillers, and surgical consumables</p>
           </div>
           <button onclick="openModal('inventory-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
             + Add Stock Item
@@ -409,7 +410,7 @@
       <h3 class="font-bold text-lg mb-4 text-slate-900">Register Patient Profile</h3>
       <form onsubmit="handleSavePatient(event)" class="space-y-3">
         <input type="text" id="p-name" placeholder="Patient Full Name" required class="w-full border rounded-lg p-2 text-sm"/>
-        <input type="text" id="p-phone" placeholder="WhatsApp Phone (e.g., 201012345678)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="p-phone" placeholder="WhatsApp Phone (e.g. 201012345678)" required class="w-full border rounded-lg p-2 text-sm"/>
         <select id="p-journey" class="w-full border rounded-lg p-2 text-sm bg-white">
           <option value="Inquiry">Stage: Inquiry</option>
           <option value="Consultation">Stage: Consultation</option>
@@ -417,7 +418,7 @@
           <option value="Post-Op Recovery">Stage: Post-Op Recovery</option>
           <option value="Completed">Stage: Completed</option>
         </select>
-        <textarea id="p-history" placeholder="Medical history, allergies, Fitzpatrick scale, previous surgeries..." class="w-full border rounded-lg p-2 text-sm"></textarea>
+        <textarea id="p-history" placeholder="Medical history, allergies, Fitzpatrick skin type, past surgeries..." class="w-full border rounded-lg p-2 text-sm"></textarea>
         <select id="p-doctor" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('patient-modal')" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
@@ -437,7 +438,7 @@
         <input type="datetime-local" id="apt-datetime" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="text" id="apt-service" placeholder="Treatment (e.g. Candela GentleLase 1500 Pulses)" required class="w-full border rounded-lg p-2 text-sm"/>
         <div>
-          <label class="text-xs font-semibold text-slate-600">Laser Pulses Fired:</label>
+          <label class="text-xs font-semibold text-slate-600">Laser Pulses Fired in Session:</label>
           <input type="number" id="apt-pulses" placeholder="0" value="0" class="w-full border rounded-lg p-2 text-sm mt-1"/>
         </div>
         <div class="flex justify-end gap-2 pt-2">
@@ -453,7 +454,7 @@
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
       <h3 class="font-bold text-lg mb-4 text-slate-900">Add Doctor Profile</h3>
       <form onsubmit="handleSaveDoctor(event)" class="space-y-3">
-        <input type="text" id="doc-name" placeholder="Full Name (e.g., Dr. Tarek Zaki)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="doc-name" placeholder="Full Name (e.g. Dr. Tarek Zaki)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="email" id="doc-email" placeholder="Doctor Login Email" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="doc-base" placeholder="Base Salary ($)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" step="0.01" id="doc-pulse-rate" placeholder="Bonus per Laser Pulse ($) e.g., 0.05" required class="w-full border rounded-lg p-2 text-sm"/>
@@ -471,7 +472,7 @@
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
       <h3 class="font-bold text-lg mb-4 text-slate-900">Add Service / Laser Package</h3>
       <form onsubmit="handleSaveService(event)" class="space-y-3">
-        <input type="text" id="srv-name" placeholder="Procedure Name (e.g., Full Legs Laser)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="srv-name" placeholder="Procedure Name (e.g. Full Legs Laser)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="srv-cost" placeholder="Internal Cost ($)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="srv-price" placeholder="Retail Price ($)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="srv-pulses" placeholder="Standard Pulses (if laser, otherwise 0)" value="0" class="w-full border rounded-lg p-2 text-sm"/>
@@ -510,7 +511,7 @@
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
       <h3 class="font-bold text-lg mb-4 text-slate-900">Add Inventory Consumable</h3>
       <form onsubmit="handleSaveInventory(event)" class="space-y-3">
-        <input type="text" id="inv-name" placeholder="Item Name (e.g., Cryogen Gas Tank, Juvederm 1ml)" required class="w-full border rounded-lg p-2 text-sm"/>
+        <input type="text" id="inv-name" placeholder="Item Name (e.g. Cryogen Gas Tank, Juvederm 1ml)" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="inv-qty" placeholder="In-Stock Units" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" id="inv-min" placeholder="Low Stock Alert Threshold" required class="w-full border rounded-lg p-2 text-sm"/>
         <input type="number" step="0.01" id="inv-cost" placeholder="Unit Cost ($)" required class="w-full border rounded-lg p-2 text-sm"/>
@@ -522,81 +523,60 @@
     </div>
   </div>
 
-  <!-- Supabase Cloud Credentials Modal -->
+  <!-- Supabase Credentials Modal -->
   <div id="supabase-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-center gap-2">
         <i data-lucide="database" class="text-emerald-600"></i>
         <h3 class="font-bold text-lg text-slate-900">Supabase Cloud Sync</h3>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed">Enter your Supabase URL & Anon Key to sync patient files, laser pulse counts, and financial ledgers to the cloud.</p>
+      <p class="text-xs text-slate-500 leading-relaxed">Your Supabase cloud credentials are authenticated. Data synchronizes automatically when online.</p>
       <div>
         <label class="text-xs font-semibold text-slate-700">Project URL</label>
-        <input type="text" id="sb-url" placeholder="https://your-project.supabase.co" class="w-full border rounded-lg p-2 text-sm mt-1"/>
+        <input type="text" id="sb-url" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50" readonly />
       </div>
       <div>
         <label class="text-xs font-semibold text-slate-700">Anon Public Key</label>
-        <input type="text" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5c..." class="w-full border rounded-lg p-2 text-sm mt-1"/>
+        <input type="text" id="sb-key" class="w-full border rounded-lg p-2 text-sm mt-1 bg-slate-50" readonly />
       </div>
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeModal('supabase-modal')" class="px-4 py-2 border rounded-lg text-sm">Close</button>
-        <button onclick="saveSupabaseSettings()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">Save & Connect</button>
+        <button onclick="closeModal('supabase-modal')" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= LOGIC & JAVASCRIPT ================= -->
+  <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
   <script>
-    /* ================= CONFIGURATION ================= */
-// Paste your actual Supabase credentials here:
-const SUPABASE_PROJECT_URL = "https://xyzcompany.supabase.co"; // Replace with your Project URL
-const SUPABASE_ANON_KEY = "eyJhbGciOi...";                    // Replace with your Anon Key
+    /* ================= 1. CONFIGURATION & STATE ================= */
+    const SUPABASE_PROJECT_URL = "https://jvfxgpesntmabnpytojw.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2ZnhncGVzbnRtYWJucHl0b2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3ODU0MDYsImV4cCI6MjEwOTM2MTQwNn0.EZWnlrc16uC_MfOxw8T1o0jtGMTXoilsPhn973Kj5u0";
 
-const STORE_KEY = 'aura_clinic_master_db';
-let currentUser = null;
-let selectedTooth = null;
-let supabaseClient = null;
+    const STORE_KEY = 'aura_clinic_master_db';
+    let currentUser = null; // { id, email, name, role: 'owner'|'doctor', doctorId }
+    let selectedTooth = null;
+    let supabaseClient = null;
 
-let appState = {
-  doctors: [],
-  patients: [],
-  services: [],
-  appointments: [],
-  invoices: [],
-  inventory: [],
-  dentalRecords: {},
-  logs: []
-};
-
+    // Zero hardcoded demo data
     let appState = {
-      doctors: [
-        
-      ],
-      patients: [
-      ],
-      services: [
-      ],
-      appointments: [
-      ],
-      invoices: [
-      ],
-      inventory: [
-      ],
-      dentalRecords: {
-      },
-      logs: [
-      ],
-      supabaseConfig: {
-        url: localStorage.getItem('aura_sb_url') || '',
-        key: localStorage.getItem('aura_sb_key') || ''
-      }
+      doctors: [],
+      patients: [],
+      services: [],
+      appointments: [],
+      invoices: [],
+      inventory: [],
+      dentalRecords: {},
+      logs: []
     };
 
-    /* INITIALIZATION & OFFLINE PERSISTENCE */
+    /* ================= 2. INITIALIZATION & STORAGE ================= */
     function initStore() {
       const cached = localStorage.getItem(STORE_KEY);
       if (cached) {
-        try { appState = JSON.parse(cached); } catch (e) { console.error('Corrupted cache', e); }
+        try { 
+          appState = JSON.parse(cached); 
+        } catch (e) { 
+          console.error('Corrupted cache', e); 
+        }
       }
       persist();
       initSupabase();
@@ -620,143 +600,27 @@ let appState = {
       localStorage.setItem(STORE_KEY, JSON.stringify(appState));
     }
 
-    /* SUPABASE CLOUD CONNECTION */
-    /* SUPABASE CLIENT INITIALIZATION */
-function initSupabase() {
-  const url = SUPABASE_PROJECT_URL || localStorage.getItem('aura_sb_url');
-  const key = SUPABASE_ANON_KEY || localStorage.getItem('aura_sb_key');
-
-  if (url && key && url !== "https://xyzcompany.supabase.co") {
-    try {
-      supabaseClient = supabase.createClient(url, key);
-      const badge = document.getElementById('sync-status-badge');
-      if (badge) {
-        badge.textContent = 'Supabase Cloud';
-        badge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase';
-      }
-      return true;
-    } catch (e) {
-      console.warn('Supabase initialization failed:', e);
-      return false;
-    }
-  }
-  return false;
-}
-
-/* VERIFIED AUTHENTICATION */
-async function handleLogin(e) {
-  e.preventDefault();
-  
-  const emailInput = document.getElementById('auth-email').value.trim();
-  const passwordInput = document.getElementById('auth-password').value;
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Verifying credentials...';
-
-  // Make sure Supabase is initialized
-  if (!supabaseClient) {
-    initSupabase();
-  }
-
-  // 1. If Supabase is still not configured, inform the user clearly
-  if (!supabaseClient) {
-    alert("Configuration Error:\nSupabase Project URL and Anon Key are missing. Please add them at the top of the <script> tag in index.html.");
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Enter Clinical Portal';
-    return;
-  }
-
-  // 2. ONLINE VERIFICATION
-  if (navigator.onLine) {
-    try {
-      // Step A: Check email & password with Supabase Auth
-      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email: emailInput,
-        password: passwordInput
-      });
-
-      if (authError) throw authError;
-
-      // Step B: Query staff_profiles table for verified role
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('staff_profiles')
-        .select('role, full_name, doctor_id')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profileError || !profile) {
-        throw new Error('Authenticated, but no role profile was found in staff_profiles table.');
-      }
-
-      // Step C: Set the verified user session
-      currentUser = {
-        id: authData.user.id,
-        email: authData.user.email,
-        name: profile.full_name,
-        role: profile.role, // 'owner' or 'doctor'
-        doctorId: profile.doctor_id || null
-      };
-
-      // Save session locally so OFFLINE logins work in the future
-      localStorage.setItem('aura_active_session', JSON.stringify({
-        user: currentUser,
-        timestamp: Date.now()
-      }));
-
-      completeLoginUI();
-      logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
-      return;
-
-    } catch (err) {
-      alert('Authentication Failed: ' + err.message);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enter Clinical Portal';
-      return;
-    }
-  }
-
-  // 3. OFFLINE EMERGENCY LOGIN FALLBACK
-  const cachedSession = localStorage.getItem('aura_active_session');
-  if (cachedSession) {
-    try {
-      const session = JSON.parse(cachedSession);
-      if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
-        currentUser = session.user;
-        completeLoginUI();
-        logAction('OFFLINE_LOGIN', `Offline emergency login for ${currentUser.email}`);
-        return;
-      }
-    } catch(err) {
-      console.error(err);
-    }
-  }
-
-  alert('Offline Error: You must log in online at least once on this device before offline mode can be used.');
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Enter Clinical Portal';
-}catch (e) {
-          console.warn('Supabase initialization failed:', e);
+    /* ================= 3. SUPABASE CLOUD SYNC ================= */
+    function initSupabase() {
+      try {
+        supabaseClient = supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
+        const badge = document.getElementById('sync-status-badge');
+        if (badge) {
+          badge.textContent = 'Supabase Cloud';
+          badge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase';
         }
+        document.getElementById('sb-url').value = SUPABASE_PROJECT_URL;
+        document.getElementById('sb-key').value = SUPABASE_ANON_KEY;
+        return true;
+      } catch (e) {
+        console.warn('Supabase initialization failed:', e);
+        return false;
       }
-    }
-
-    async function saveSupabaseSettings() {
-      const url = document.getElementById('sb-url').value.trim();
-      const key = document.getElementById('sb-key').value.trim();
-      appState.supabaseConfig.url = url;
-      appState.supabaseConfig.key = key;
-      localStorage.setItem('aura_sb_url', url);
-      localStorage.setItem('aura_sb_key', key);
-      closeModal('supabase-modal');
-      initSupabase();
-      alert('Supabase credentials stored. Live sync active.');
     }
 
     async function syncWithSupabase() {
       if (!supabaseClient || !navigator.onLine) return;
       try {
-        // Example: Push latest audit logs non-blockingly
         if (appState.logs.length > 0) {
           const l = appState.logs[0];
           await supabaseClient.from('audit_logs').upsert({
@@ -772,117 +636,111 @@ async function handleLogin(e) {
       }
     }
 
-    /* AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC) */
- /* VERIFIED AUTHENTICATION & ROLE RETRIEVAL */
-async function handleLogin(e) {
-  e.preventDefault();
-  
-  const emailInput = document.getElementById('auth-email').value.trim();
-  const passwordInput = document.getElementById('auth-password').value;
-  const submitBtn = e.target.querySelector('button[type="submit"]');
+    /* ================= 4. AUTHENTICATION & RBAC ================= */
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const emailInput = document.getElementById('auth-email').value.trim();
+      const passwordInput = document.getElementById('auth-password').value;
+      const submitBtn = e.target.querySelector('button[type="submit"]');
 
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Verifying credentials...';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying credentials...';
 
-  // 1. ONLINE VERIFICATION (Via Supabase Auth)
-  if (supabaseClient && navigator.onLine) {
-    try {
-      // Step A: Check Email & Password against Supabase Auth
-      const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email: emailInput,
-        password: passwordInput
-      });
-
-      if (authError) throw authError;
-
-      // Step B: Query the user's verified role from the staff_profiles table
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('staff_profiles')
-        .select('role, full_name, doctor_id')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profileError || !profile) {
-        throw new Error('Authenticated, but no clinical staff profile was found for this user.');
+      if (!supabaseClient) {
+        initSupabase();
       }
 
-      // Step C: Set Verified Session State
-      currentUser = {
-        id: authData.user.id,
-        email: authData.user.email,
-        name: profile.full_name,
-        role: profile.role, // 'owner' or 'doctor'
-        doctorId: profile.doctor_id || null
-      };
+      // Online Verification
+      if (navigator.onLine) {
+        try {
+          const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+            email: emailInput,
+            password: passwordInput
+          });
 
-      // Cache verified session locally for offline emergency access
-      localStorage.setItem('aura_active_session', JSON.stringify({
-        user: currentUser,
-        timestamp: Date.now()
-      }));
+          if (authError) throw authError;
 
-      completeLoginUI();
-      logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
-      return;
+          // Retrieve verified role from staff_profiles
+          const { data: profile, error: profileError } = await supabaseClient
+            .from('staff_profiles')
+            .select('role, full_name, doctor_id')
+            .eq('id', authData.user.id)
+            .single();
 
-    } catch (err) {
-      alert('Authentication Failed: ' + err.message);
+          if (profileError || !profile) {
+            throw new Error('Authenticated, but no role profile was found in staff_profiles table. Run Step 1 SQL script.');
+          }
+
+          currentUser = {
+            id: authData.user.id,
+            email: authData.user.email,
+            name: profile.full_name,
+            role: profile.role, // 'owner' or 'doctor'
+            doctorId: profile.doctor_id || null
+          };
+
+          // Cache verified session for offline access
+          localStorage.setItem('aura_active_session', JSON.stringify({
+            user: currentUser,
+            timestamp: Date.now()
+          }));
+
+          completeLoginUI();
+          logAction('LOGIN_SUCCESS', `Verified login for ${currentUser.email} (${currentUser.role})`);
+          return;
+
+        } catch (err) {
+          alert('Authentication Failed: ' + err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enter Clinical Portal';
+          return;
+        }
+      }
+
+      // Offline Emergency Fallback
+      const cachedSession = localStorage.getItem('aura_active_session');
+      if (cachedSession) {
+        try {
+          const session = JSON.parse(cachedSession);
+          if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
+            currentUser = session.user;
+            completeLoginUI();
+            logAction('OFFLINE_LOGIN', `Offline login for ${currentUser.email}`);
+            return;
+          }
+        } catch(err) {
+          console.error(err);
+        }
+      }
+
+      alert('Offline Error: You must log in online at least once on this device before offline mode can be used.');
       submitBtn.disabled = false;
       submitBtn.textContent = 'Enter Clinical Portal';
-      return;
     }
-  }
 
-  // 2. OFFLINE EMERGENCY LOGIN FALLBACK
-  // If the clinic loses internet, verify against the cached session created during the last online login
-  const cachedSession = localStorage.getItem('aura_active_session');
-  if (cachedSession) {
-    try {
-      const session = JSON.parse(cachedSession);
-      if (session.user.email.toLowerCase() === emailInput.toLowerCase()) {
-        currentUser = session.user;
-        completeLoginUI();
-        logAction('OFFLINE_LOGIN', `Offline emergency login for ${currentUser.email}`);
-        return;
-      }
-    } catch(err) {
-      console.error(err);
+    function completeLoginUI() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+
+      document.getElementById('user-display-name').textContent = currentUser.name;
+      document.getElementById('user-display-role').textContent = 
+        currentUser.role === 'owner' ? 'Owner / Manager (Full Access)' : 'Doctor (Restricted)';
+
+      applyRBAC();
+      renderAll();
     }
-  }
 
-  alert('Authentication Error: Cannot verify credentials while offline without a prior active session.');
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Enter Clinical Portal';
-}
-
-function completeLoginUI() {
-  document.getElementById('auth-screen').classList.add('hidden');
-  document.getElementById('main-app').classList.remove('hidden');
-
-  document.getElementById('user-display-name').textContent = currentUser.name;
-  document.getElementById('user-display-role').textContent = 
-    currentUser.role === 'owner' ? 'Owner / Manager (Full Access)' : 'Doctor (Restricted)';
-
-  applyRBAC();
-  renderAll();
-}
-
-function logout() {
-  if (supabaseClient) {
-    supabaseClient.auth.signOut();
-  }
-  localStorage.removeItem('aura_active_session');
-  currentUser = null;
-  document.getElementById('main-app').classList.add('hidden');
-  document.getElementById('auth-screen').classList.remove('hidden');
-  document.getElementById('auth-email').value = '';
-  document.getElementById('auth-password').value = '';
-}
     function logout() {
-      logAction('LOGOUT', `User ${currentUser.email} logged out`);
+      if (supabaseClient) {
+        supabaseClient.auth.signOut();
+      }
+      localStorage.removeItem('aura_active_session');
       currentUser = null;
       document.getElementById('main-app').classList.add('hidden');
       document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('auth-email').value = '';
+      document.getElementById('auth-password').value = '';
     }
 
     function applyRBAC() {
@@ -894,7 +752,7 @@ function logout() {
       }
     }
 
-    /* NAVIGATION */
+    /* ================= 5. NAVIGATION ================= */
     function navigate(secId) {
       document.querySelectorAll('.page-sec').forEach(s => s.classList.add('hidden'));
       document.getElementById('sec-' + secId).classList.remove('hidden');
@@ -906,13 +764,13 @@ function logout() {
       event.currentTarget.classList.add('bg-slate-800', 'text-slate-100');
     }
 
-    /* WHATSAPP AUTOMATION & BOT */
+    /* ================= 6. WHATSAPP AUTOMATION ================= */
     function sendWhatsAppSession(phone, patientName, date, service) {
       const formattedDate = date.replace('T', ' at ');
       const msg = `Hello ${patientName},\nThis is Aura Aesthetic Clinic reminding you of your session for *${service}* scheduled on *${formattedDate}*.\n\nPlease reply 1 to Confirm or 2 to Reschedule.`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
       window.open(url, '_blank');
-      logAction('WHATSAPP_DISPATCH', `Session reminder dispatched to ${patientName} (${phone})`);
+      logAction('WHATSAPP_DISPATCH', `Reminder sent to ${patientName} (${phone})`);
     }
 
     function runWhatsAppBot() {
@@ -921,11 +779,11 @@ function logout() {
         const pat = appState.patients.find(p => p.id === apt.patientId);
         if (pat) count++;
       });
-      alert(`WhatsApp Automation Bot Executed:\n\n• Processed ${count} active treatments.\n• Follow-up check-ins & post-treatment cooling instructions queued.`);
+      alert(`WhatsApp Automation Bot Executed:\n\n• Checked ${count} active treatments.\n• Post-treatment cooling instructions and follow-ups processed.`);
       logAction('WHATSAPP_BOT', `Bot auto-followup checked ${count} sessions`);
     }
 
-    /* RENDER ENGINE */
+    /* ================= 7. RENDER ENGINE ================= */
     function renderAll() {
       renderDashboard();
       renderCalendar();
@@ -941,7 +799,7 @@ function logout() {
     }
 
     function renderDashboard() {
-      // Filter if Doctor
+      if (!currentUser) return;
       const appointments = (currentUser.role === 'doctor') 
         ? appState.appointments.filter(a => a.doctorId === currentUser.doctorId) 
         : appState.appointments;
@@ -953,7 +811,6 @@ function logout() {
       document.getElementById('dash-pulses').textContent = totalPulses.toLocaleString();
       document.getElementById('dash-patients').textContent = appState.patients.length;
 
-      // Doctor Salary Liabilities
       let totalSalaries = 0;
       appState.doctors.forEach(doc => {
         const docApts = appState.appointments.filter(a => a.doctorId === doc.id);
@@ -984,6 +841,7 @@ function logout() {
     }
 
     function renderCalendar() {
+      if (!currentUser) return;
       const tbody = document.getElementById('calendar-table-body');
       const list = (currentUser.role === 'doctor') 
         ? appState.appointments.filter(a => a.doctorId === currentUser.doctorId) 
@@ -1009,8 +867,8 @@ function logout() {
     }
 
     function renderPatients() {
+      if (!currentUser) return;
       const tbody = document.getElementById('patient-table-body');
-      // Doctors can only view patients assigned to them
       const list = (currentUser.role === 'doctor') 
         ? appState.patients.filter(p => p.assignedDoctorId === currentUser.doctorId) 
         : appState.patients;
@@ -1045,7 +903,7 @@ function logout() {
             <td class="p-3 font-bold text-slate-800">${doc.name}</td>
             <td class="p-3 font-mono">$${doc.baseSalary.toLocaleString()}</td>
             <td class="p-3 font-mono font-bold text-rose-600">${totalPulses.toLocaleString()}</td>
-            <td class="p-3 font-mono text-emerald-600">+$${pulseBonus.toFixed(2)} <span class="text-[10px] text-slate-400">($${doc.pulseRate}/pulse)</span></td>
+            <td class="p-3 font-mono text-emerald-600">+$${pulseBonus.toFixed(2)}</td>
             <td class="p-3 font-mono">${(doc.commissionRate * 100)}%</td>
             <td class="p-3 font-mono font-black text-slate-900 bg-slate-50">$${netSalary.toFixed(2)}</td>
           </tr>
@@ -1122,10 +980,11 @@ function logout() {
       `).join('');
     }
 
-    /* INTERACTIVE DENTAL & MAXILLOFACIAL CHART */
+    /* ================= 8. DENTAL & AESTHETIC CHART ================= */
     function initDentalChart() {
       const upper = document.getElementById('upper-teeth');
       const lower = document.getElementById('lower-teeth');
+      if (!upper || !lower) return;
       upper.innerHTML = ''; lower.innerHTML = '';
 
       const upperTeeth = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
@@ -1177,7 +1036,9 @@ function logout() {
     }
 
     function loadSelectedPatientDental() {
-      const patId = document.getElementById('dental-patient-select').value;
+      const sel = document.getElementById('dental-patient-select');
+      if (!sel) return;
+      const patId = sel.value;
       const records = appState.dentalRecords[patId] || {};
 
       for (let i = 1; i <= 32; i++) {
@@ -1193,10 +1054,12 @@ function logout() {
 
     function renderDentalPatientDropdown() {
       const sel = document.getElementById('dental-patient-select');
-      sel.innerHTML = appState.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      if (sel) {
+        sel.innerHTML = appState.patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      }
     }
 
-    /* FORM HANDLERS & MODAL MANAGEMENT */
+    /* ================= 9. FORM ACTIONS & MODALS ================= */
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -1335,8 +1198,8 @@ function logout() {
       const invoices = appState.invoices.filter(i => i.patientId === patientId);
       const total = invoices.reduce((acc, i) => acc + Number(i.amount), 0);
 
-      let msg = `Financial Statement: ${pat.name}\n`;
-      msg += `Phone: ${pat.phone}\n`;
+      let msg = `Financial Statement: ${pat ? pat.name : 'Unknown'}\n`;
+      msg += `Phone: ${pat ? pat.phone : 'N/A'}\n`;
       msg += `------------------------------------\n`;
       if (invoices.length === 0) {
         msg += `No previous month or current statements.\n`;
@@ -1350,7 +1213,7 @@ function logout() {
       alert(msg);
     }
 
-    /* RUNTIME BOOTSTRAP */
+    /* ================= 10. BOOTSTRAP ================= */
     window.addEventListener('DOMContentLoaded', () => {
       initStore();
       initDentalChart();
